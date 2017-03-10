@@ -1,17 +1,30 @@
 #!/bin/sh
-# Automated script to run aloja
+# Script to startup aloja and excute basic commands in an atomated manner
 # Goethe University Frankfurt
 # Big Data Lab
 # Author: Raphael Radowitz
+# Date of creation: Nov 2016
 
 # Ititialization
+
+[ ! "$ALOJA_DIR" ] && ALOJA_DIR="/home/rradowitz/Documents/aloja" #aloja source dir
+[ ! "$BENCH_PATH" ] && BENCH_PATH="/vagrant/aloja-bench" #path to run_bench file on VM
+
+# Environment variables
+[ ! "$JAVA" ] && JAVA="JAVA_HOME=/scratch/local/aplic2/apps/jdk1.8.0_101"
+[ ! "$HADOOP" ] && HADOOP="HADOOP_HOME=/scratch/local/aplic2/apps/hadoop-2.7.3"
+[ ! "$PATH" ] && PATH="PATH=\$PATH:\$JAVA_HOME/bin:\$HADOOP_HOME/bin"
+
+
+
+
 
 mainmenu () {
   echo "================================================="
   echo "Press 1 - Start Aloja & Run a Benchmark"
   echo "Press 2 - Check Vagrant Global Status"
   echo "Press 3 - Vagrant Destroy"
-  echo "Press 4 - Run Benchmark only"
+  echo "Press 4 - Run Benchmark"
   echo "Press 5 - Connect to Vagrant-99-00"
   echo "Press 6 - Connect to Vagrant-99-01"
   echo "Press 7 - Open mysql on aloja-web"
@@ -22,8 +35,10 @@ mainmenu () {
   echo ""
   read -p "Input Selection: " mainmenuinput
   echo "_________________________________________________"
-  #pushd ~/Documents/aloja
-  cd ~/Documents/aloja
+  
+  #Navigte to the aloja directory
+  cd "$ALOJA_DIR"  
+
   if [ "$mainmenuinput" = "1" ]; then
             alojastartup
             mainmenu
@@ -50,9 +65,9 @@ mainmenu () {
             connectmysql                
         elif [ "$mainmenuinput" = "8" ]; then
 	    #setVariables       
-		testBash
-		#updateBash
-		mainmenu
+            testBash
+	    #updateBash
+	    mainmenu
         elif [ "$mainmenuinput" = "9" ]; then
             vagrant destroy -f               
             alojastartup
@@ -80,35 +95,32 @@ alojastartup () {
   echo ""
   echo Connecting to vagrant-99-00
   echo "================================================="
-  #echo Installing dsh ...
-  #gnome-terminal -x vagrant ssh vagrant-99-00 -- -t 'sudo apt-get install dsh'
 }
 
 # Run benchmarks
 runbench () {
-  path="cd ../../vagrant/aloja-bench"
   echo ""
   echo "Press 1 to run hivebench"
   echo "Press 2 to run D2F-Bench-hive"
   echo "Press 3 to run TPCH_SCALE_FACTOR=2 ./run_benchs.sh -b D2F-Bench-hive"
   echo "Press 4 to run any other custom script"
   echo ""
-  read -p "Select Benchmark:" benchinput
+  read -p "Select Benchmark: " benchinput
   if [ "$benchinput" = "1" ]; then
-  	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t 'cd ../../vagrant/aloja-bench; 
-	    ./run_benchs.sh -b hivebench'
+  	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH; 
+	    ./run_benchs.sh -b hivebench && exec \$SHELL"
 	    mainmenu
         elif [ "$benchinput" = "2" ]; then
-	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t 'cd ../../vagrant/aloja-bench; 
-	    ./run_benchs.sh -b D2F-Bench-hive'
+	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH; 
+	    ./run_benchs.sh -b D2F-Bench-hive && exec \$SHELL"
 	    mainmenu
 	elif [ "$benchinput" = "3" ]; then
-	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t 'cd ../../vagrant/aloja-bench;
-	    TPCH_SCALE_FACTOR=2 ./run_benchs.sh -b D2F-Bench-hive'
+	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH;
+	    TPCH_SCALE_FACTOR=2 ./run_benchs.sh -b D2F-Bench-hive && exec \$SHELL"
 	    mainmenu
 	elif [ "$benchinput" = "4" ]; then
-	    read -p "Custom Benchmark:" benchscript	
-	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t 'cd ../../vagrant/aloja-bench;'$benchscript
+	    read -p "Custom Benchmark: " benchscript	
+	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH;$benchscript && exec \$SHELL"
 	    mainmenu
 	else 
 	    clear
@@ -118,7 +130,7 @@ runbench () {
 
 # Open Terminal to vagrant-99-00
 connect() {
-  gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd ../../vagrant/aloja-bench && exec \$SHELL"
+  gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH && exec \$SHELL"
   mainmenu
 }
 
@@ -181,9 +193,8 @@ updateBash(){
 }
 
 testBash(){
-  #gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd ../../vagrant/aloja-bench && exec \$SHELL; \$echo \"export JAVA_HOME88='/scratch/local/aplic2/apps/jdk1.8.0_101'\""
-  #vagrant ssh vagrant-99-00 -- -t "exec \$echo \"export JAVA_HOME88='/scratch/local/aplic2/apps/jdk1.8.0_101'\"" 
-  gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "exec declare -x JAVA_HOME88TEST='/scratch/local/aplic2/apps/jdk1.8.0_101'"
+  #ssh vagrant-99-00 -- -t "exec \$bash" < /home/rradowitz/Desktop/test.sh
+  gnome-terminal -x ssh vagrant-99-01
 }
 
 mainmenu

@@ -105,12 +105,12 @@ tpc-h_load-text(){
 }
 
 tpc-h_delete-text(){
-  #if [ ! "$BENCH_KEEP_FILES" == "1" ] && [ ! "$BENCH_LEAVE_SERVICES" "1"  ] ; then
+  if [ ! "$BENCH_KEEP_FILES" == "1" ] && [ ! "$BENCH_LEAVE_SERVICES" "1"  ] ; then
     local bench_name="${FUNCNAME[0]}"
 
     logger "INFO: Deleting external plain tables to save space (if BENCH_KEEP_FILES is not set)"
     clean_HDFS "$bench_name" "$TPCH_HDFS_DIR/$TPCH_SCALE_FACTOR"
-  #fi
+  fi
 }
 
 tpc-h_load-optimize() {
@@ -156,10 +156,30 @@ tpc-h_validate_load() {
 }
 
 tpc-h_delete_dbgen(){
-  #if [ ! "$BENCH_KEEP_FILES" == "1" ] && [ ! "$BENCH_LEAVE_SERVICES" "1"  ] ; then
+  if [ ! "$BENCH_KEEP_FILES" == "1" ] && [ ! "$BENCH_LEAVE_SERVICES" "1"  ] ; then
     logger "INFO: deleting original DBGEN files to save space"
     hadoop_delete_path "$bench_name" "$TPCH_HDFS_DIR/$TPCH_SCALE_FACTOR"
-  #fi
+  fi
+}
+
+tpc-h_datagen_only(){
+if [ ! "$BENCH_KEEP_FILES" ] ; then
+    # Check if need to build the dbgen
+    tpc-h_build
+
+    # Generate the data
+    if [ "$TPCH_SCALE_FACTOR" == "1" ] ; then
+      tpc-h_cmd_datagen "1"
+    elif [[ "$TPCH_USE_LOCAL_FACTOR" > 0 ]] ; then
+      tpc-h_cmd_datagen "$TPCH_USE_LOCAL_FACTOR"
+    else
+      tpc-h_hadoop_datagen
+    fi
+
+    logger "INFO: Data are not deleted"
+  else
+    logger "WARNING: reusing HDFS files"
+fi
 }
 
 tpc-h_datagen() {
