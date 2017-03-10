@@ -54,6 +54,6 @@ benchmark_suite_run() {
 execute_tpchquery_spark() {
   local query="$1"
   #execute_spark "$bench_name" "--class \"main.scala.TpchQuery\" --master local $nativeSparkJarPath/spark-tpc-h-queries_2.11-1.0.jar $query" "time"
-  execute_spark "$bench_name" "--class \"main.scala.TpchQuery\" --executor-memory 500mb --master yarn $nativeSparkJarPath/spark-tpc-h-queries_2.11-1.0.jar $query" "time"
+  execute_spark "$bench_name" "--class \"main.scala.TpchQuery\" $nativeSparkJarPath/spark-tpc-h-queries_2.11-1.0.jar $query" "time"
   #execute_spark "$bench_name" "--class \"main.scala.TpchQuery\" --driver-memory 1g --executor-memory 1g --executor-cores 1 --master yarn /tmp/$native_TPCH_folder/spark-tpc-h-queries_2.11-1.0.jar 4" "time"
 }
