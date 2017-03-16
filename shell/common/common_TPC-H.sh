@@ -1,17 +1,24 @@
 # Common functions for different TPC-H implementations
 # Based on Hadoop and Hive
 
-source_file "$ALOJA_REPO_PATH/shell/common/common_hive.sh"
-set_hive_requires
+if [ "$BENCH_SUITE" == "Bench-native-spark" ]; then
+  source_file "$ALOJA_REPO_PATH/shell/common/common_hadoop.sh"
+  set_hadoop_requires
+else
+  source_file "$ALOJA_REPO_PATH/shell/common/common_hive.sh"
+  set_hive_requires
+fi
 
 [ ! "$TPCH_SCALE_FACTOR" ] &&  TPCH_SCALE_FACTOR=1 #1 GB min size
 [ ! "$TPCH_USE_LOCAL_FACTOR" ] && TPCH_USE_LOCAL_FACTOR="" #set to a scale factor to use the local DBGEN instead of the M/R version
 
 BENCH_DATA_SIZE="$((TPCH_SCALE_FACTOR * 1000000000 ))" #in bytes
 
-
 TPCH_HDFS_DIR="/tmp/tpch-generate"
-TPCH_DB_NAME="tpch_${BENCH_FILE_FORMAT}_${TPCH_SCALE_FACTOR}"
+
+if [ ! "$BENCH_SUITE" == "Bench-native-spark" ]; then
+  TPCH_DB_NAME="tpch_${BENCH_FILE_FORMAT}_${TPCH_SCALE_FACTOR}"
+fi
 
 [ ! "$BENCH_LIST" ] && BENCH_LIST="$(seq -f "tpch_query%g" -s " " 1 22)"
 
@@ -33,8 +40,10 @@ benchmark_suite_config() {
   prepare_hadoop_config "$NET" "$DISK" "$BENCH_SUITE"
   start_hadoop
 
-  initialize_hive_vars
-  prepare_hive_config "$HIVE_SETTINGS_FILE" "$HIVE_SETTINGS_FILE_PATH"
+  if [ ! "$BENCH_SUITE" == "Bench-native-spark" ]; then
+    initialize_hive_vars
+    prepare_hive_config "$HIVE_SETTINGS_FILE" "$HIVE_SETTINGS_FILE_PATH"
+  fi
 }
 
 benchmark_suite_run() {
@@ -195,18 +204,21 @@ tpc-h_datagen() {
     else
       tpc-h_hadoop_datagen
     fi
+    
+    # Keep files for TPCH on native Spark & no need to load into DB
+    if [ ! "$BENCH_SUITE" == "Bench-native-spark" ]; then
+      # Load external tables as text
+      tpc-h_load-text
 
-    # Load external tables as text
-    tpc-h_load-text
+      # Optimize tables to format
+      tpc-h_load-optimize
 
-    # Optimize tables to format
-    tpc-h_load-optimize
+      # Try to validate data creation
+      tpc-h_validate_load
 
-    # Try to validate data creation
-    tpc-h_validate_load
-
-    # Delete source files
-    tpc-h_delete_dbgen
+      # Delete source files
+      tpc-h_delete_dbgen
+    fi
 
     logger "INFO: Data loaded and optimized into database $TPCH_DB_NAME"
   else

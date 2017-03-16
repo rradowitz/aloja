@@ -6,28 +6,56 @@ source_file "$ALOJA_REPO_PATH/shell/common/common_TPC-H.sh"
 source_file "$ALOJA_REPO_PATH/shell/common/common_spark.sh"
 set_spark_requires
 
-#Override BENCH_LIST from common_TPCH.sh
-#BENCH_LIST="$(seq 22)"
+# Bench list - queries 1 to 22
+# BENCH_LIST="$(seq 22)"
 BENCH_LIST="4 22"
 
 #D2F_folder_name="D2F-Bench-master"
-#BENCH_REQUIRED_FILES["$D2F_folder_name"]="http://github.com/Aloja/D2F-Bench/archive/master.zip"
 #D2F_local_dir="$(get_local_apps_path)/$D2F_folder_name"
 
+# Set Bench name
+bench_name="TPCH-on-Native_Spark"
+native_spark_folder_name="native_spark"
+
+#BENCH_REQUIRED_FILES["$native_spark_folder_name"]="https://1drv.ms/u/s!AlfVfLVFPWIZ3hX-E50Q5WBCJIzt"
+ 
+
+# Local
+native_spark_local_dir="$(get_local_apps_path)/$native_spark_folder_name"
+native_spark_local_JarPath="/vagrant/blobs/aplic2/tarballs"
+
+
+# HDFS
+native_spark_hdfs_dir="/$native_spark_folder"
+  
+# Create Output folder
+#logger "INFO: Creating temporary output and native spark folder"
+#execute_hadoop_new "$bench_name" "fs -mkdir -p /$native_spark_folder/{output}"
+
+# Set scaleFactor for data input dir
+scaleFactor=$TPCH_SCALE_FACTOR
+if [ "$TPCH_USE_LOCAL_FACTOR" > 0 ] ; then
+  scaleFactor=$TPCH_USE_LOCAL_FACTOR
+fi
+
+
+benchmark_suite_config() {
+  initialize_hadoop_vars
+  prepare_hadoop_config "$NET" "$DISK" "$BENCH_SUITE"
+  start_hadoop
+
+  initialize_spark_vars
+  prepare_spark_config
+}
+
+benchmark_suite_cleanup() {
+  clean_hadoop
+}
 
 benchmark_suite_run() {
   logger "INFO: Running $BENCH_SUITE"
-  
-  bench_name="Native_Spark-TPCH"
-  native_spark_folder="nativeSpark"
-  nativeSparkJarPath="/vagrant/blobs/aplic2/tarballs"
-  hdfsfolder="/tmp/$native_spark_folder"  
-  
-  #Create Output folder
-  execute_hadoop_new "$bench_name" "fs -mkdir -p /tmp/{output,$native_spark_folder}"
-  execute_hadoop_new "$bench_name" "fs -copyFromLocal /vagrant/blobs/aplic2/tarballs/spark-tpc-h-queries_2.11-1.0.jar /tmp/$native_spark_folder"
-  
-  tpc-h_datagen_only
+    
+  tpc-h_datagen
 
   BENCH_CURRENT_NUM_RUN="1" #reset the global counter
 
@@ -52,9 +80,8 @@ benchmark_suite_run() {
 }
 
 # $1 query number
+# jar is expecting 3 args [scaleFactor, BenchNum, query]
 execute_tpchquery_spark() {
   local query="$1"
-  execute_spark "$bench_name" "--class \"main.scala.TpchQuery\" $nativeSparkJarPath/spark-tpc-h-queries_2.11-1.0.jar $query" "time"
-  #execute_spark "$bench_name" "--class \"main.scala.TpchQuery\" --master local $nativeSparkJarPath/spark-tpc-h-queries_2.11-1.0.jar $query" "time"
-  #execute_spark "$bench_name" "--class \"main.scala.TpchQuery\" --driver-memory 1g --executor-memory 500mb --executor-cores 1 --master yarn /tmp/$native_TPCH_folder/spark-tpc-h-queries_2.11-1.0.jar 4" "time"
+  execute_spark "$bench_name" "--class main.scala.TpchQuery $native_spark_local_JarPath/spark-tpc-h-queries_2.11-1.0.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query" "time"
 }
