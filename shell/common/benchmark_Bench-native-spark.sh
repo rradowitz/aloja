@@ -22,7 +22,7 @@ BENCH_REQUIRED_FILES["$native_spark_folder_name"]="https://github.com/rradowitz/
 # Local
 native_spark_local_dir="$(get_local_apps_path)/$native_spark_folder_name"
 native_spark_local_JarPath="/vagrant/blobs/aplic2/tarballs"
-
+native_spark_local_JarPath_2="/scratch/local/aplic2/apps/Aloja-nativeSpark-master"
 
 # HDFS
 native_spark_hdfs_dir="/$native_spark_folder"
@@ -83,5 +83,5 @@ benchmark_suite_run() {
 execute_tpchquery_spark() {
   local query="$1"
   #execute_spark "$bench_name" "--class main.scala.TpchQuery $native_spark_local_JarPath/spark-tpc-h-queries_2.11-1.0.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query" "time"
-  execute_spark "$bench_name" "--class main.scala.TpchQuery $native_spark_local_dir/spark-tpc-h-queries_2.11-1.0.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query" "time"
+  execute_spark "$bench_name" "--class main.scala.TpchQuery $native_spark_local_JarPath_2/spark-tpc-h-queries_2.11-1.0.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query" "time"
 }
