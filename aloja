@@ -6,15 +6,17 @@
 # Date of creation: Nov 2016
 
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
-echo "Welcome to Aloja!
-This little script is for managing your local Aloja repro half automated."
+echo "Welcome to the Aloja start up script!
+This little script provides basic functions for managing your local Aloja repro.
+Some variables might need to be modified."
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 echo ""
 echo ""
 echo ""
 
 # Ititialization
-[ ! "$ALOJA_DIR" ] && ALOJA_DIR="/home/rradowitz/Documents/aloja" #aloja source dir
+[ ! "$ALOJA_DIR" ] && ALOJA_DIR="/home/rradowitz/Documents/aloja" #aloja source dir.
+
 [ ! "$BENCH_PATH" ] && BENCH_PATH="/vagrant/aloja-bench" #path to run_bench file on VM
 
 
@@ -27,15 +29,16 @@ echo ""
 [ ! "$HADOOP_YH" ] && HADOOP_YH="HADOOP_YARN_HOME='/scratch/local/aplic2/apps/hadoop-2.7.3'"
 [ ! "$YARN_LD" ] && YARN_LD="YARN_LOG_DIR='/scratch/local/aloja-bench_3/hadoop_logs'" 
 [ ! "$SPARK_CD" ] && SPARK_LD="SPARK_CONF_DIR='/scratch/local/aloja-bench_3/spark_conf'" 
-[ ! "$SPARK_LD" ] && SPARK_LD="SPARK_LOG_DIR='/scratch/local/aloja-bench_3/spark_logs'" 
-[ ! "$SPARK_V" ] && SPARK_V="SPARK_VERSION='spark-2.0.2'" 
-[ ! "$SPARK_H" ] && SPARK_H="SPARK_HOME='/scratch/local/aplic2/apps/spark-2.0.2-bin-without-hadoop'"
-[ ! "$SPARK_DIST_C" ] && SPARK_DIST_C="SPARK_DIST_CLASSPATH=\"\$(/scratch/local/aplic2/apps/hadoop-2.7.3/bin/hadoop classpath)\""
-[ ! "$PATH_P" ] && PATH_P="PATH=\$PATH:\$JAVA_HOME/bin:\$HADOOP_HOME/bin:\$SPARK_HOME/bin:\$HADOOP_CONF_DIR:\$HADOOP_LOG_DIR:\$HADOOP_OPTS:\$HADOOP_YARN_HOME/bin:\$YARN_LOG_DIR:\$SPARK_VERSION:\$SPARK_CONF_DIR:\$SPARK_LOG_DIR:\$SPARK_DIST_CLASSPATH'
-"
+[ ! "$SPARK_LD" ] && SPARK_LD="SPARK_LOG_DIR='/scratch/local/aloja-bench_3/spark_logs'"  
+[ ! "$SPARK_V" ] && SPARK_V="SPARK_VERSION='spark-2.0.2'" 						#Depending on the used Spark-Version need to modify.
+[ ! "$SPARK_H" ] && SPARK_H="SPARK_HOME='/scratch/local/aplic2/apps/spark-2.0.2-bin-without-hadoop'"	#Depending on the used Spark-Version need to modify.
+#[ ! "$SPARK_DIST_C" ] && SPARK_DIST_C="SPARK_DIST_CLASSPATH=\"\$(/scratch/local/aplic2/apps/hadoop-2.7.3/bin/hadoop classpath)\""
+#[ ! "$PATH_P" ] && PATH_P="PATH=\$PATH:\$JAVA_HOME/bin:\$HADOOP_HOME/bin:\$SPARK_HOME/bin:\$HADOOP_CONF_DIR:\$HADOOP_LOG_DIR:\$HADOOP_OPTS:\$HADOOP_YARN_HOME/bin:\$YARN_LOG_DIR:\$SPARK_VERSION:\$SPARK_CONF_DIR:\$SPARK_LOG_DIR:\$SPARK_DIST_CLASSPATH'"
 
-#PATH='/home/vagrant/share/vagrant-99/sw/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:\$JAVA_HOME/bin:\$HADOOP_HOME/bin:\$SPARK_HOME/bin:\$HADOOP_CONF_DIR:\$HADOOP_LOG_DIR:\$HADOOP_OPTS:\$HADOOP_YARN_HOME/bin:\$YARN_LOG_DIR:\$SPARK_VERSION:\$SPARK_CONF_DIR:\$SPARK_LOG_DIR:\$SPARK_DIST_CLASSPATH'
-
+bashrc_export="echo \"export JAVA_HOME=/scratch/local/aplic2/apps/jdk1.8.0_101\" >> ~/.bashrc; 
+		echo \"export HADOOP_HOME=/scratch/local/aplic2/apps/hadoop-2.7.3\" >> ~/.bashrc; 
+		echo \"PATH=\$PATH:\$JAVA_HOME/bin:\$HADOOP_HOME/bin\" >> ~/.bashrc;
+                . ~/.bashrc"
 
 #source $ALOJA_DIR/aloja.conf
 
@@ -49,7 +52,6 @@ mainmenu () {
   echo "Press 5 - Connect to Vagrant-99-00"
   echo "Press 6 - Connect to Vagrant-99-01"
   echo "Press 7 - Open mysql on aloja-web"
-  echo "Press 8 - Set Variables"
   echo "Press 9 - RESTART"
   echo "Press x - EXIT"
   echo "================================================="
@@ -85,11 +87,7 @@ mainmenu () {
             coonect2
         elif [ "$mainmenuinput" = "7" ]; then
             connectmysql                
-        elif [ "$mainmenuinput" = "8" ]; then
-	    #setVariables       
-            testBash
-	    #updateBash
-	    mainmenu
+#        elif [ "$mainmenuinput" = "8" ]; then
         elif [ "$mainmenuinput" = "9" ]; then
             vagrant destroy -f               
             alojastartup
@@ -153,9 +151,9 @@ runbench () {
 # Open Terminal to vagrant-99-00
 connect() {
   gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH && exec \$SHELL"
-  #gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH && env $JAVA && env $HADOOP_CD && env $HADOOP_LD && env $HADOOP_H && env $HADOOP_O && env $HADOOP_YH && env $YARN_LD && env $SPARK_CD && env $SPARK_LD && env $SPARK_V && env $SPARK_H && exec \$SHELL"
-
-  # && env $SPARK_DIST_C && env $PATH_P 
+#  gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH && env $JAVA && env $HADOOP_CD && env $HADOOP_LD && env $HADOOP_H && env $HADOOP_O && env $HADOOP_YH && env $YARN_LD && env $SPARK_CD && env $SPARK_LD && env $SPARK_V && env $SPARK_H && env $PATH_P && exec \$SHELL"
+  # && env $SPARK_DIST_C
+  
   mainmenu
 }
 
@@ -171,36 +169,8 @@ connectmysql() {
   mainmenu
 }
 
-setVariables() {
-  echo "================================================="
-  echo "Press 1 - Spark Version: spark-1.6.3"
-  echo "Press 2 - Spark Version: spark-2.0.2"
-  echo "Press 3 - Spark Version: spark_hive-1.6.2"
-  echo "================================================="
-  echo ""
-  read -p "Input Selection: " version
-
-  
-  if [ "$version" = "1" ]; then
-  	mainmenu #vagrant ssh vagrant-99-00 -- -t "export SPARK_VERSION='spark-1.6.3'; export SPARK_HOME='/scratch/local/aplic2/apps/spark-1.6.3-bin-without-hadoop';" 
-    elif [ "$version" = "2" ]; then
-	mainmenu #vagrant ssh vagrant-99-00 -- -t "export SPARK_VERSION='spark-2.0.2'; export SPARK_HOME='/scratch/local/aplic2/apps/spark-2.0.2-bin-without-hadoop';" 
-    elif [ "$version" = "3" ]; then
-        mainmenu #vagrant ssh vagrant-99-00 -- -t "export SPARK_VERSION='spark_hive-1.6.2'; export SPARK_HOME='/scratch/local/aplic2/apps/spark_hive-1.6.2';"
-    else 
-    clear
-    mainmenu
-  fi
-  
-  updateBash
-  mainmenu
-}
-
 updateBash(){
-  vagrant ssh vagrant-99-00 -- -t "echo \"export JAVA_HOME=/scratch/local/aplic2/apps/jdk1.8.0_101\" >> ~/.bashrc; 
-				   echo \"export HADOOP_HOME=/scratch/local/aplic2/apps/hadoop-2.7.3\" >> ~/.bashrc; 
-				   echo \"PATH=\$PATH:\$JAVA_HOME/bin:\$HADOOP_HOME/bin\" >> ~/.bashrc;
-                                   . ~/.bashrc"
+  vagrant ssh vagrant-99-00 -- -t "$bashrc_export"
 }
 
 
