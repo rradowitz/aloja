@@ -7,8 +7,8 @@ source_file "$ALOJA_REPO_PATH/shell/common/common_spark.sh"
 set_spark_requires
 
 # Bench list - queries 1 to 22
-BENCH_LIST="$(seq 22)"
-# BENCH_LIST="4 22"
+# BENCH_LIST="$(seq 22)"
+BENCH_LIST="4 22"
 
 #D2F_folder_name="D2F-Bench-master"
 #D2F_local_dir="$(get_local_apps_path)/$D2F_folder_name"
@@ -17,8 +17,7 @@ BENCH_LIST="$(seq 22)"
 bench_name="TPCH-on-Native_Spark"
 native_spark_folder_name="native_spark"
 
-#BENCH_REQUIRED_FILES["$native_spark_folder_name"]="https://1drv.ms/u/s!AlfVfLVFPWIZ3hX-E50Q5WBCJIzt"
- 
+BENCH_REQUIRED_FILES["$native_spark_folder_name"]="https://github.com/rradowitz/Aloja-nativeSpark/archive/master.zip"
 
 # Local
 native_spark_local_dir="$(get_local_apps_path)/$native_spark_folder_name"
@@ -83,5 +82,6 @@ benchmark_suite_run() {
 # jar is expecting 3 args [scaleFactor, BenchNum, query]
 execute_tpchquery_spark() {
   local query="$1"
-  execute_spark "$bench_name" "--class main.scala.TpchQuery $native_spark_local_JarPath/spark-tpc-h-queries_2.11-1.0.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query" "time"
+  #execute_spark "$bench_name" "--class main.scala.TpchQuery $native_spark_local_JarPath/spark-tpc-h-queries_2.11-1.0.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query" "time"
+  execute_spark "$bench_name" "--class main.scala.TpchQuery $native_spark_local_dir/spark-tpc-h-queries_2.11-1.0.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query" "time"
 }

@@ -222,6 +222,6 @@ save_spark() {
     fi
   fi
   # Save spark conf
-  # $DSH_MASTER "tar -cjf $JOB_PATH/spark_conf.tar.bz2 $SPARK_CONF_DIR/*"
+  $DSH_MASTER "tar -cjf $JOB_PATH/spark_conf.tar.bz2 $SPARK_CONF_DIR/*"
   save_hadoop "$bench_name"
 }
