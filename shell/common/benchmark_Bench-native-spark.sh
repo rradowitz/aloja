@@ -9,9 +9,6 @@ set_spark_requires
 # Bench list - queries 1 to 22
 BENCH_LIST="$(seq 22)"
 
-#D2F_folder_name="D2F-Bench-master"
-#D2F_local_dir="$(get_local_apps_path)/$D2F_folder_name"
-
 # Set Bench name
 bench_name="TPCH-on-Native_Spark"
 native_spark_folder_name="native_spark-master"
@@ -27,8 +24,8 @@ native_spark_local_JarPath="/vagrant/blobs/aplic2/tarballs"
 native_spark_hdfs_dir="/$native_spark_folder"
   
 # Create Output folder
-#logger "INFO: Creating temporary output and native spark folder"
-#execute_hadoop_new "$bench_name" "fs -mkdir -p /$native_spark_folder/{output}"
+# logger "INFO: Creating temporary output and native spark folder"
+# execute_hadoop_new "$bench_name" "fs -mkdir -p /$native_spark_folder/{output}"
 
 # Set scaleFactor for data input dir
 scaleFactor=$TPCH_SCALE_FACTOR
@@ -84,6 +81,5 @@ benchmark_suite_run() {
 # query for TPCH query
 execute_tpchquery_spark() {
   local query="$1"
-  #execute_spark "$bench_name" "--class main.scala.TpchQuery $native_spark_local_JarPath/spark-tpc-h-queries_2.11-1.0.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query" "time"
   execute_spark "$bench_name" "--class main.scala.TpchQuery $native_spark_local_dir/spark-tpc-h-queries_2.11-1.0.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query" "time"
 }
