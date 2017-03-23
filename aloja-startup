@@ -173,10 +173,8 @@ updateBash(){
   vagrant ssh vagrant-99-00 -- -t "$bashrc_export"
 }
 
-updateGit(){
-  
-
-}
+#updateGit(){
+#}
 
 
 mainmenu
