@@ -1,0 +1,189 @@
+#!/bin/sh
+# Script to startup aloja and excute basic commands in an atomated manner
+# Goethe University Frankfurt
+# Big Data Lab
+# Author: Raphael Radowitz
+# Date of creation: Nov 2016
+
+echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
+echo "============================ Aloja-start up script ============================"
+echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
+echo ""
+echo ""
+echo ""
+
+# Ititialization
+[ ! "$ALOJA_DIR" ] && ALOJA_DIR="/home/rradowitz/Documents/aloja" #aloja source dir.
+
+[ ! "$BENCH_PATH" ] && BENCH_PATH="/vagrant/aloja-bench" #path to run_bench file on VM
+
+
+# Environment variables
+[ ! "$JAVA" ] && JAVA="JAVA_HOME='/scratch/local/aplic2/apps/jdk1.8.0_101'"
+[ ! "$HADOOP_CD" ] && HADOOP_CD="HADOOP_CONF_DIR='/scratch/local/aloja-bench_3/hadoop_conf'"
+[ ! "$HADOOP_LD" ] && HADOOP_LD="HADOOP_LOG_DIR='/scratch/local/aloja-bench_3/hadoop_logs'"
+[ ! "$HADOOP_H" ] && HADOOP_H="HADOOP_HOME='/scratch/local/aplic2/apps/hadoop-2.7.3'"
+[ ! "$HADOOP_O" ] && HADOOP_O="HADOOP_OPTS=''" 
+[ ! "$HADOOP_YH" ] && HADOOP_YH="HADOOP_YARN_HOME='/scratch/local/aplic2/apps/hadoop-2.7.3'"
+[ ! "$YARN_LD" ] && YARN_LD="YARN_LOG_DIR='/scratch/local/aloja-bench_3/hadoop_logs'" 
+[ ! "$SPARK_CD" ] && SPARK_LD="SPARK_CONF_DIR='/scratch/local/aloja-bench_3/spark_conf'" 
+[ ! "$SPARK_LD" ] && SPARK_LD="SPARK_LOG_DIR='/scratch/local/aloja-bench_3/spark_logs'"  
+[ ! "$SPARK_V" ] && SPARK_V="SPARK_VERSION='spark-2.0.2'" 						#Depending on the used Spark-Version need to modify.
+[ ! "$SPARK_H" ] && SPARK_H="SPARK_HOME='/scratch/local/aplic2/apps/spark-2.0.2-bin-without-hadoop'"	#Depending on the used Spark-Version need to modify.
+#[ ! "$SPARK_DIST_C" ] && SPARK_DIST_C="SPARK_DIST_CLASSPATH=\"\$(/scratch/local/aplic2/apps/hadoop-2.7.3/bin/hadoop classpath)\""
+#[ ! "$PATH_P" ] && PATH_P="PATH=\$PATH:\$JAVA_HOME/bin:\$HADOOP_HOME/bin:\$SPARK_HOME/bin:\$HADOOP_CONF_DIR:\$HADOOP_LOG_DIR:\$HADOOP_OPTS:\$HADOOP_YARN_HOME/bin:\$YARN_LOG_DIR:\$SPARK_VERSION:\$SPARK_CONF_DIR:\$SPARK_LOG_DIR:\$SPARK_DIST_CLASSPATH'"
+
+bashrc_export="echo \"export JAVA_HOME=/scratch/local/aplic2/apps/jdk1.8.0_101\" >> ~/.bashrc; 
+		echo \"export HADOOP_HOME=/scratch/local/aplic2/apps/hadoop-2.7.3\" >> ~/.bashrc; 
+		echo \"PATH=\$PATH:\$JAVA_HOME/bin:\$HADOOP_HOME/bin\" >> ~/.bashrc;
+                . ~/.bashrc"
+
+#source $ALOJA_DIR/aloja.conf
+
+
+mainmenu () {
+  echo "================================================="
+  echo "Press 1 - Start Aloja & Run a Benchmark"
+  echo "Press 2 - Check Vagrant Global Status"
+  echo "Press 3 - Vagrant Destroy"
+  echo "Press 4 - Run Benchmark"
+  echo "Press 5 - Connect to Vagrant-99-00"
+  echo "Press 6 - Connect to Vagrant-99-01"
+  echo "Press 7 - Open mysql on aloja-web"
+  #echo "Press 8 - GIT"
+  echo "Press 9 - RESTART"
+  echo "Press x - EXIT"
+  echo "================================================="
+  echo ""
+  read -p "Input Selection: " mainmenuinput
+  echo "_________________________________________________"
+  
+  #Navigte to the aloja directory
+  cd "$ALOJA_DIR"  
+
+  if [ "$mainmenuinput" = "1" ]; then
+            alojastartup
+            mainmenu
+        elif [ "$mainmenuinput" = "2" ]; then
+  	    vagrant global-status
+            echo ""
+	    echo ""
+	    mainmenu
+        elif [ "$mainmenuinput" = "3" ]; then
+	    vagrant destroy -f
+            echo ""
+	    echo ""
+	    mainmenu
+        elif [ "$mainmenuinput" = "4" ]; then
+            runbench            
+            echo ""
+	    echo ""
+	    mainmenu
+	elif [ "$mainmenuinput" = "5" ]; then
+            connect            
+            updateBash
+	elif [ "$mainmenuinput" = "6" ]; then
+            coonect2
+        elif [ "$mainmenuinput" = "7" ]; then
+            connectmysql                
+#        elif [ "$mainmenuinput" = "8" ]; then
+#	   updateGit
+        elif [ "$mainmenuinput" = "9" ]; then
+            vagrant destroy -f               
+            alojastartup
+	    mainmenu
+        elif [ "$mainmenuinput" = "x" ];then
+            exit
+        elif [ "$mainmenuinput" = "X" ];then
+            exit
+        else
+            clear
+            mainmenu
+  fi
+}
+
+# Aloja startup
+alojastartup () {
+  echo "================================================="
+  echo "Bringing up aloja-web & vagrant-99-00 & vagrant-99-01"
+  echo ""
+  vagrant up
+  echo ""
+  echo Starting vagrant-99-00 and vagrant-99-01
+  echo ""
+  vagrant up vagrant-99-00 vagrant-99-01 
+  echo ""
+  echo Connecting to vagrant-99-00
+  echo "================================================="
+}
+
+# Run benchmarks
+runbench () {
+  echo ""
+  echo "Press 1 to run hivebench"
+  echo "Press 2 to run D2F-Bench-hive"
+  echo "Press 3 to run TPCH_SCALE_FACTOR=2 ./run_benchs.sh -b D2F-Bench-hive"
+  echo "Press 4 to run any other custom script"
+  echo ""
+  read -p "Select Benchmark: " benchinput
+  if [ "$benchinput" = "1" ]; then
+  	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH; 
+	    ./run_benchs.sh -b hivebench && exec \$SHELL"
+	    mainmenu
+        elif [ "$benchinput" = "2" ]; then
+	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH; 
+	    ./run_benchs.sh -b D2F-Bench-hive && exec \$SHELL"
+	    mainmenu
+	elif [ "$benchinput" = "3" ]; then
+	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH;
+	    TPCH_SCALE_FACTOR=2 ./run_benchs.sh -b D2F-Bench-hive && exec \$SHELL"
+	    mainmenu
+	elif [ "$benchinput" = "4" ]; then
+	    read -p "Custom Benchmark: " benchscript	
+	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH;$benchscript && exec \$SHELL"
+	    mainmenu
+	else 
+	    clear
+            mainmenu
+  fi
+}
+
+# Open Terminal to vagrant-99-00
+connect() {
+  gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH && exec \$SHELL"
+#  gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH && env $JAVA && env $HADOOP_CD && env $HADOOP_LD && env $HADOOP_H && env $HADOOP_O && env $HADOOP_YH && env $YARN_LD && env $SPARK_CD && env $SPARK_LD && env $SPARK_V && env $SPARK_H && env $PATH_P && exec \$SHELL"
+  # && env $SPARK_DIST_C
+  
+  mainmenu
+}
+
+# Open Terminal to vagrant-99-01
+coonect2() {
+  gnome-terminal -x vagrant ssh vagrant-99-01
+  mainmenu
+}
+
+# Open MySQL @ aloja-web
+connectmysql() {
+  gnome-terminal -x vagrant ssh -- -t 'sudo mysql'
+  mainmenu
+}
+
+updateBash(){
+  vagrant ssh vagrant-99-00 -- -t "$bashrc_export"
+}
+
+updateGit(){
+  
+
+}
+
+
+mainmenu
+
+
+
+
+
+
+
