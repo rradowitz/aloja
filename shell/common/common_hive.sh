@@ -8,7 +8,8 @@ set_hive_requires() {
 
   if [ "$clusterType" != "PaaS" ]; then
     if [ "$(get_hadoop_major_version)" == "2" ]; then
-      BENCH_REQUIRED_FILES["$HIVE_VERSION"]="http://www-us.apache.org/dist/hive/stable/$HIVE_VERSION.tar.gz"
+      # TODO need to fix the paths for Hive
+      BENCH_REQUIRED_FILES["$HIVE_VERSION"]="http://www-us.apache.org/dist/hive/hive-1.2.2/$HIVE_VERSION.tar.gz"
       if [ "$HIVE_ENGINE" == "tez" ]; then
         source_file "$ALOJA_REPO_PATH/shell/common/common_tez.sh"
         set_tez_requires
@@ -104,16 +105,12 @@ initialize_hive_vars() {
   if [ "$clusterType" == "PaaS" ]; then
     HIVE_HOME="/usr"
     HIVE_CONF_DIR="/etc/hive/conf"
-    [ ! "$HIVE_SETTINGS_FILE" ] && HIVE_SETTINGS_FILE="$HDD/hive_conf/hive.settings.BB_PaaS.sql"
+    [ ! "$HIVE_SETTINGS_FILE" ] && HIVE_SETTINGS_FILE="$HDD/hive_conf/hive.settings_PaaS"
   else
     HIVE_HOME="$(get_local_apps_path)/${HIVE_VERSION}"
     HIVE_CONF_DIR="$HDD/hive_conf"
-    # Only set a default hive.settings when not in PaaS
-    if [ "$BENCH_SUITE" == "BigBench" ]; then
-      [ ! "$HIVE_SETTINGS_FILE" ] && HIVE_SETTINGS_FILE="$HDD/hive_conf/hive.settings.BB.sql"
-    else
-      [ ! "$HIVE_SETTINGS_FILE" ] && HIVE_SETTINGS_FILE="$HDD/hive_conf/hive.settings"
-    fi
+
+    [ ! "$HIVE_SETTINGS_FILE" ] && HIVE_SETTINGS_FILE="$HDD/hive_conf/hive.settings"
 
     if [ "$HIVE_ENGINE" == "tez" ]; then
       initialize_tez_vars
@@ -209,13 +206,15 @@ prepare_hive_config() {
   if [ "$clusterType" == "PaaS" ]; then
     logger "INFO: in PaaS mode, not changing Hive system config"
 
-    #For CBD at least
-    time_cmd_master "sudo -u hive hadoop fs -chmod -R 777 /user/hive/ /hive/warehouse/"
+    #For CBD at least TODO verify
+    #log_INFO "Making sure permissions are open in hive"
+    #time_cmd_master "sudo -u hive hadoop fs -chmod -R 777 /user/hive/ /hive/warehouse/"
     #just in case
-    time_cmd_master "sudo hadoop fs -chmod -R 777 /user/hive/ /hive/warehouse/"
+    #time_cmd_master "sudo hadoop fs -chmod -R 777 /user/hive/ /hive/warehouse/"
+    log_INFO "Listing hive warehouse permissions (but not changing them)"
+    execute_hadoop_new "Hive folders" "fs -ls /user/hive/ /hive/warehouse/"
 
-    $DSH "mkdir -p $(get_hive_conf_dir); cp -r $(get_local_configs_path)/hive1_conf_template/hive.settings.BB_PaaS.sql $(get_hive_conf_dir);"
-
+    $DSH "mkdir -p $(get_hive_conf_dir); cp -r $(get_local_configs_path)/hive1_conf_template/hive.settings_PaaS $(get_hive_conf_dir);"
   else
     logger "INFO: Preparing Hive run specific config"
     $DSH "mkdir -p $(get_hive_conf_dir) $HDD/hive_logs; cp -r $(get_local_configs_path)/hive1_conf_template/* $(get_hive_conf_dir);"
@@ -286,14 +285,6 @@ save_hive() {
 
   logger "INFO: Compresing and deleting hadoop configs for $bench_name_num"
 
-  $DSH_MASTER "
-
-cd $JOB_PATH;
-if [ \"\$(ls conf_* 2> /dev/null)\" ] ; then
-  tar -cjf $JOB_PATH/hadoop_host_conf.tar.bz2 conf_*;
-  rm -rf conf_*;
-fi
-"
   # save tez
   if [ "$HIVE_ENGINE" == "tez" ]; then
     save_tez "$bench_name"

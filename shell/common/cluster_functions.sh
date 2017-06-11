@@ -38,6 +38,7 @@ vm_create_node() {
 
   local needSshPw=$1
 
+  # Providers with special create "needs"
   if [ "$defaultProvider" == "hdinsight" ]; then
     vm_name="$clusterName"
     status=$(hdi_cluster_check_create "$clusterName")
@@ -51,10 +52,11 @@ vm_create_node() {
     vm_name="$clusterName"
     create_cbd_cluster "$clusterName"
     vm_final_bootstrap "$clusterName"
-  elif [ "$defaultProvider" == "amazonemr" ]; then
-    vm_name="$clusterName"
-    #create_cbd_cluster "$clusterName"
-    vm_final_bootstrap "$clusterName"
+#  elif [ "$defaultProvider" == "amazonemr" ]; then
+#    vm_name="$clusterName"
+#    #create_cbd_cluster "$clusterName"
+#    vm_final_bootstrap "$clusterName"
+  # Normal Linux case
   elif [ "$vmType" != 'windows' ] ; then
     requireRootFirst["$vm_name"]="true" #for some providers that need root user first it is disabled further on
 
@@ -67,7 +69,7 @@ vm_create_node() {
     else
       vm_provision $needSshPw
     fi
-
+  # Windows
   elif [ "$vmType" == 'windows' ] ; then
     vm_check_create "$vm_name" "$vm_ssh_port"
     wait_vm_ready "$vm_name"
@@ -93,7 +95,7 @@ vm_create_connect() {
     wait_vm_ssh_ready
 
   #make sure the correct number of disks is initialized
-  elif [ "$attachedVolumes" != "0" ] && ! vm_test_initiallize_disks ; then
+  elif (( attachedVolumes > 0 )) && ! vm_test_initiallize_disks ; then
     vm_check_attach_disks "$1"
   fi
 
@@ -133,8 +135,10 @@ vm_provision() {
 
     # On PaaS don't touch the disks... at least here
     if [ "$clusterType" != "PaaS" ]; then
-      vm_initialize_disks #cluster is in parallel later
+      vm_initialize_disks # cluster is in parallel later
     fi
+
+    vm_create_share_master # checks if we need to setup the shared dir on the master first
     vm_mount_disks
     vm_build_required
   else
@@ -212,8 +216,46 @@ vm_is_available(){
   fi
 }
 
-vm_build_dsh(){
+# Builds a current version of BASH
+vm_build_bash() {
+  log_INFO "Building an updated user version of BASH"
 
+  vm_execute "
+targetdir=\$HOME/share/$clusterName
+
+mkdir -p \${targetdir}/build || exit 1
+cd \${targetdir}/build || exit 1
+
+# target dir
+mkdir -p \${targetdir}/sw/bin || exit 1
+
+tarball1='bash-4.4.tar.gz'
+dir1=\${tarball1%.tar.gz}
+
+#wget -nv \"http://ftp.gnu.org/gnu/bash/\${tarball1}\" || exit 1
+#rm -rf -- \"\${dir1}\" || exit 1
+
+# first, build the library
+#{ tar -xf \"\${tarball1}\" && rm \"\${tarball1}\"; } || exit 1
+
+cd \"\${dir1}\" || exit 1
+
+./configure --prefix=\${targetdir}/sw || exit 1
+make -j4 || exit 1
+make install || exit 1
+
+# we know that \${targetdir}/sw/bin is in our path because the deployment configures it
+
+#mv \${targetdir}/sw/bin/{dsh,dsh.bin}
+
+# install wrapper to not depend on config file
+
+chmod +x \${targetdir}/sw/bin/bash || exit 1
+"
+}
+
+vm_build_dsh(){
+  log_INFO "Building DSH"
   vm_execute "
 
 # download and build dsh for local use
@@ -354,6 +396,30 @@ get_slaves_names() {
   echo -e "$node_names"
 }
 
+get_first_slave() {
+  local node_names=""
+  local node_number=""
+
+  if [ "$nodeNames" ] ; then #remove the master
+    for node_name in $nodeNames ; do
+      if (( node_number > 0 )); then
+        node_names="$node_name"
+        break # only first slave
+      fi
+      ((node_number++))
+    done
+  else #generate them from standard naming
+    for vm_id in $(seq -f "%02g" 1 "$numberOfNodes") ; do #pad the sequence with 0s
+      if (( node_number > 0 )); then
+        node_names="$node_name"
+        break # only first slave
+      fi
+      ((node_number++))
+    done
+  fi
+  echo -e "$node_names"
+}
+
 # Gets the list of extra nodes to instrument if necessary
 get_extra_node_names() {
   local node_names=''
@@ -406,17 +472,29 @@ get_ssh_port() {
   fi
 }
 
-#default port, override to change i.e. Openstack might need first root
 get_ssh_user() {
-  echo "${userAloja}"
+  #check if we can change from root user
+  if [[ "${requireRootFirst[$vm_name]}" && "${userAlojaPre}" ]] ; then
+    #"WARNING: connecting as root"
+    echo "${userAlojaPre}"
+  else
+    echo "${userAloja}"
+  fi
 }
 
 get_ssh_pass() {
-  echo "${passwordAloja}"
+  #check if we can change from root user
+  if [[ "${requireRootFirst[$vm_name]}" && "${userAlojaPre}" ]] ; then
+    #"WARNING: connecting as root"
+    echo "${passwordAlojaPre}"
+  else
+    echo "${passwordAloja}"
+  fi
+
 }
 
 vm_initial_bootstrap() {
-  : #not necesarry by default
+  : #not necessary by default
 }
 
 check_sudo() {
@@ -514,7 +592,7 @@ vm_local_scp() {
   local sshpass=files/sshpass.sh
   local src="$1"
 
-  logger "SCPing files"
+  log_INFO "SCPing files from: $(eval echo "${src}") to: $(get_ssh_user)@$(get_ssh_host):$2"
 
   set_shh_proxy
 
@@ -524,7 +602,6 @@ vm_local_scp() {
     scp -i "$(get_ssh_key)" -o StrictHostKeyChecking=no -o PasswordAuthentication=no -o "$proxyDetails" -P  "$(get_ssh_port)" $(eval echo "$3") $(eval echo "${src}") "$(get_ssh_user)"@"$(get_ssh_host):$2"
   #Use password
   else
-    logger "password"
     "$sshpass" "$(get_ssh_pass)" scp -o StrictHostKeyChecking=no -o "$proxyDetails" -P  "$(get_ssh_port)" $(eval echo "$3") $(eval echo "${src}") "$(get_ssh_user)"@"$(get_ssh_host):$2"
   fi
 }
@@ -535,8 +612,9 @@ vm_local_scp() {
 vm_rsync() {
     set_shh_proxy
 
-    logger "INFO: RSynching from Local dir: $1 To: $2"
+    logger "INFO: Synching from Local dir: $1 To: $2"
     #eval is for parameter expansion  --progress --copy-links
+    log_DEBUG "rsync -avur --partial --force  -e ssh -i $(get_ssh_key) -o StrictHostKeyChecking=no -p $(get_ssh_port) -o '$proxyDetails'  $(eval echo "$3") $(eval echo "$1") $(get_ssh_user)@$(get_ssh_host):$2"
     rsync -avur --partial --force  -e "ssh -i $(get_ssh_key) -o StrictHostKeyChecking=no -p $(get_ssh_port) -o '$proxyDetails' " $(eval echo "$3") $(eval echo "$1") "$(get_ssh_user)"@"$(get_ssh_host):$2"
 }
 
@@ -546,12 +624,14 @@ vm_rsync() {
 # $3 destination port
 # $4 extra SHH options (optional)
 # $5 SHH proxy (optional)
+# $6 Use a remote/global server instead of current node (optional)
 vm_rsync_from() {
     local source="$1"
     local destination="$2"
     local destination_port="$3"
     local extra_options="$4"
     local proxy
+    local global_server="$6"
 
     if [ "$5" ] ; then
       proxy="ProxyCommand=$5"
@@ -559,12 +639,20 @@ vm_rsync_from() {
       proxy="ProxyCommand=none"
     fi
 
-    logger "INFO: RSynching from $(hostname): $source To external: $destination"
+    logger "INFO: Syncing from $(hostname): $source To external: $destination"
 
     #eval is for parameter expansion
-    logger "DEBUG: rsync -avur --partial --force  -e 'ssh -i $(get_ssh_key) -o StrictHostKeyChecking=no -p $destination_port -o \"$proxy\"' $(eval echo "$extra_options") $(eval echo "$source") $destination"
+    # -i $(get_ssh_key)
+    local cmd="rsync -avur --partial --force  -e 'ssh -o StrictHostKeyChecking=no -p $destination_port -o \"$proxy\"' $(eval echo "$extra_options") $(eval echo "$source") \"$destination\""
+    log_DEBUG "$cmd"
 
-    rsync -avur --partial --force  -e "ssh -i $(get_ssh_key) -o StrictHostKeyChecking=no -p $destination_port -o '$proxy' " $(eval echo "$extra_options") $(eval echo "$source") "$destination"
+    if [[ "$global_server" ]]; then
+      # Run command in background to continue execution
+      (ssh "${global_server%%:*}" "nohup $cmd") &
+    else
+      #-i '$CONF_DIR/../../secure/keys/id_rsa'
+      rsync -avur --partial --force  -e "ssh  -o StrictHostKeyChecking=no -p $destination_port -o '$proxy' " $(eval echo "$extra_options") $(eval echo "$source") "$destination"
+    fi
 }
 
 get_master_name() {
@@ -677,7 +765,12 @@ get_initizalize_disks_test() {
   echo "$create_string"
 }
 
+# $1 server name (optional)
+# $2 mount path (optional)
 get_share_location() {
+
+  local server_full_path="${1:-$fileServerFullPathAloja}"
+  local mount_path="${2:-$homePrefixAloja/$userAloja/share}"
 
 #  if [ "$cloud_provider" == "pedraforca" ] ; then
 #    local fs_mount="$userAloja@minerva.bsc.es:$homePrefixAloja/$userAloja/aloja/ $homePrefixAloja/$userAloja/share fuse.sshfs _netdev,users,IdentityFile=$homePrefixAloja/$userAloja/.ssh/id_rsa,allow_other,nonempty,StrictHostKeyChecking=no,auto_cache,reconnect,workaround=all 0 0"
@@ -689,9 +782,25 @@ get_share_location() {
 #    local fs_mount="$userAloja@al-1001.cloudapp.net:$homePrefixAloja/$userAloja/share/ $homePrefixAloja/$userAloja/share fuse.sshfs _netdev,users,IdentityFile=$homePrefixAloja/$userAloja/.ssh/id_rsa,allow_other,nonempty,StrictHostKeyChecking=no,Port=222,auto_cache,reconnect,workaround=all 0 0"
 #  fi
 
-  local fs_mount="$fileServerFullPathAloja $homePrefixAloja/$userAloja/share fuse.sshfs _netdev,users,exec,IdentityFile=$homePrefixAloja/$userAloja/.ssh/id_rsa,allow_other,nonempty,StrictHostKeyChecking=no,auto_cache,reconnect,workaround=all,Port=$fileServerPortAloja 0 0"
+  local fs_mount="$server_full_path $mount_path fuse.sshfs _netdev,users,exec,IdentityFile=$homePrefixAloja/$userAloja/.ssh/id_rsa,allow_other,nonempty,StrictHostKeyChecking=no,auto_cache,reconnect,workaround=all,Port=$fileServerPortAloja 0 0"
 
   echo -e "$fs_mount"
+}
+
+
+# Checks if to mount the shared dir in the master node
+is_master_fileserver() {
+  if [[ "$dont_mount_share_master" ]]; then
+    if [[ "$vm_name" == "$(get_master_name)" ]]; then
+      return 0
+    elif [[ "$defaultProvider" == "hdinsight" && $(vm_execute "hostname 2> /dev/null") == "$(get_master_name)" ]]; then
+      return 0
+    else
+      return 1
+    fi
+  else
+    return 1
+  fi
 }
 
 make_fstab(){
@@ -702,13 +811,26 @@ make_fstab(){
 
   local create_string=""
 
-  fs_mount="$(get_share_location)"
-
-  if [ -z "$dont_mount_share" ] ; then
-    local create_string="$fs_mount"
+  # Check if should mount the shared home
+  if [ ! "$dont_mount_share" ] ; then
+    # Check if we use the general one or a one in the master node for this cluster
+    if [ ! "$dont_mount_share_master" ] ; then
+      create_string="$(get_share_location)"
+    else
+      # For the Master
+      if is_master_fileserver ; then
+        create_string="$(get_share_location "" "$homePrefixAloja/$userAloja/share/share-global")"
+      # For the rest of the cluster
+      else
+        create_string="$(get_share_location "$userAloja@$(get_master_name):$homePrefixAloja/$userAloja/share/")"
+      fi
+    fi
+  else
+    log_INFO "Not mounting ~/share as requested"
   fi
 
- if [ "$clusterType" != "PaaS" ]; then
+  # TODO this should be removed in the future (paths have changed)
+  if [ "$clusterType" != "PaaS" ]; then
   num_drives="1"
   for drive_letter in $cloud_drive_letters ; do
     local create_string="$create_string
@@ -717,7 +839,7 @@ make_fstab(){
     [[ "$num_drives" -ge "$attachedVolumes" ]] && break
     num_drives="$((num_drives+1))"
   done
- fi
+  fi
 
   local create_string="$create_string
 $(get_extra_fstab)"
@@ -727,7 +849,7 @@ $(get_extra_fstab)"
 #/dev/xvda1	/               ext4    errors=remount-ro,noatime,barrier=0 0       1
 ##/dev/xvdc1	none            swap    sw              0       0' > /etc/fstab;
 
-  logger "INFO: Updating /etc/fstab template"
+  logger "INFO: Updating /etc/fstab template $create_string"
   vm_update_template "/etc/fstab" "$create_string" "secured_file"
 }
 
@@ -830,7 +952,7 @@ vm_set_ssh() {
   local bootstrap_file="${FUNCNAME[0]}"
 
   if check_bootstraped "$bootstrap_file" ""; then
-    logger "Setting SSH keys to VM $vm_name "
+    log_INFO "Setting SSH keys to VM $vm_name "
 
     if [ -z "$1" ] ; then
       local use_password="" #use SSH keys
@@ -1022,6 +1144,35 @@ cluster_initialize_disks() {
   fi"
 }
 
+vm_create_share_master() {
+  local bootstrap_file="${FUNCNAME[0]}"
+  if is_master_fileserver; then
+    if check_bootstraped "$bootstrap_file" ""; then
+      logger "INFO: Creating shared dir in: $vm_name"
+
+      vm_make_fs "$master_share_path";
+
+      local test_path="~/share/safe_store"
+      [ "$master_share_path" ] && test_path="$master_share_path"
+
+      # Create the global shared dir
+      vm_execute "mkdir -p ~/share/share-global"
+
+      local test_action="$(vm_execute "ls $test_path && ls ~/share/share-global && echo '$testKey'")"
+      if [[ "$test_action" == *"$testKey"* ]] ; then
+        #set the lock
+        check_bootstraped "$bootstrap_file" "set"
+      else
+        logger "ERROR creating shared dir for $vm_name. Test output: $test_action"
+      fi
+    else
+      logger "INFO: Shared dir already created or not master in node"
+    fi
+  else
+    logger "INFO: Using global shared dir (instead of cluster specific)"
+  fi
+}
+
 vm_mount_disks() {
   local bootstrap_file="${FUNCNAME[0]}"
   if check_bootstraped "$bootstrap_file" ""; then
@@ -1037,7 +1188,7 @@ vm_mount_disks() {
 
     #TODO make this test more robust and to test all the mounts
     local test_action="$(vm_execute "lsblk |grep '/scratch/attached' && echo '$testKey'")"
-    if [[ "$test_action" == *"$testKey"* ]] ; then
+    if (( attachedVolumes < 1 )) || [[ "$test_action" == *"$testKey"* ]] ; then
       #set the lock
       check_bootstraped "$bootstrap_file" "set"
     else
@@ -1056,20 +1207,33 @@ vm_build_required() {
 
       local bin_path="\$HOME/share/sw/bin"
 
-      # Build sysstat
-      vm_build_sar "$bin_path"
+      # Build sysstat always to have a fix and updated version for aloja
+      local required_sysstat_version="11.4.2"
+      if [[ "$required_sysstat_version" != "$(vm_execute "sar -V|head -n +1|cut -d ' ' -f3")" ]] ; then
+        vm_build_sar "$bin_path"
+      fi
 
       local test_action="$(vm_execute "which dsh && echo '$testKey'")"
-      if [[ "$test_action" == *"$testKey"* ]] ; then
+      if [[ ! "$test_action" == *"$testKey"* ]] ; then
         vm_build_dsh
       fi
 
+      # Check if to build a more recent bash version
+      local minimum_BASH_version="4.2"
+      local current_BASH_version="$(vm_execute "bash --version|head -n +1|cut -d ' ' -f4")"
+      if [[ "$minimum_BASH_version" != "$(smaller_version "$current_BASH_version" "$minimum_BASH_version")" ]] ; then
+        log_INFO "Building DSH, found version $current_BASH_version"
+        vm_build_bash
+        # Update the version
+        current_BASH_version="$(vm_execute "bash --version|head -n +1|cut -d ' ' -f4")"
+      fi
+
       local test_action="$(vm_execute "ls \"$bin_path/sar\" && dsh --version |grep 'Junichi' && echo '$testKey'")"
-      if [[ "$test_action" == *"$testKey"* ]] ; then
+      if [[ "$test_action" == *"$testKey"* && "$minimum_BASH_version" == "$(smaller_version "$current_BASH_version" "$minimum_BASH_version")" ]] ; then
         #set the lock
         check_bootstraped "$bootstrap_file" "set"
       else
-        log_WARN "Could not build sysstat or DSH correctly on $vm_name. Test output: $test_action"
+        log_WARN "Could not build sysstat or DSH correctly on $vm_name. Test output: $test_action\nBASH_VERSION=$current_BASH_version"
       fi
     fi
   else
@@ -1472,4 +1636,58 @@ clusterName='$clusterName'
 numberOfNodes='$numberOfNodes'
 "
   vm_update_host_template "$homePrefixAloja/$userAloja/aloja_cluster.conf" "$cluster_conf"
+}
+
+# Creates a user for ALOJA if needed
+vm_useradd() {
+  local bootstrap_file="${FUNCNAME[0]}"
+
+  if check_bootstraped "$bootstrap_file" ""; then
+    log_INFO "Creating user $userAloja in node $vm_name "
+
+    vm_execute "
+sudo useradd --create-home --home-dir $homePrefixAloja/$userAloja --shell /bin/bash $userAloja;
+sudo echo -n '$userAloja:$passwordAloja' |sudo chpasswd;
+sudo usermod -G sudo,adm,wheel $userAloja;
+
+sudo bash -c \"echo '$userAloja ALL=NOPASSWD:ALL' >> /etc/sudoers\";
+
+sudo mkdir -p $homePrefixAloja/$userAloja/.ssh;
+sudo bash -c \"echo '${insecureKey}' >> $homePrefixAloja/$userAloja/.ssh/authorized_keys\";
+sudo chown -R $userAloja: $homePrefixAloja/$userAloja/.ssh;
+"
+#sudo cp $homePrefixAloja/$userAloja/.profile $homePrefixAloja/$userAloja/.bashrc /root/;
+
+
+    local test_action="$(vm_execute " [ -f $homePrefixAloja/$userAloja/.ssh/authorized_keys ] && echo '$testKey'")"
+    if [[ "$test_action" == *"$testKey"* ]] ; then
+      #set the lock
+      check_bootstraped "$bootstrap_file" "set"
+    else
+      logger "ERROR: installing base packages for $vm_name. Test output: $test_action"
+    fi
+  else
+    logger "$bootstrap_file already initialized"
+  fi
+}
+
+# Sets sudo permissions without password for HDP/Rackspace
+vm_sudo_hdfs() {
+  local bootstrap_file="${FUNCNAME[0]}"
+
+  if check_bootstraped "$bootstrap_file" ""; then
+    log_INFO "Running $bootstrap_file in node $vm_name "
+
+    vm_execute "sudo bash -c \"echo '$userAloja ALL=(hdfs)NOPASSWD:ALL' >> /etc/sudoers\";"
+
+    local test_action="$(vm_execute " sudo grep 'ALL=(hdfs)' /etc/sudoers && echo '$testKey'")"
+    if [[ "$test_action" == *"$testKey"* ]] ; then
+      #set the lock
+      check_bootstraped "$bootstrap_file" "set"
+    else
+      logger "ERROR: running $bootstrap_file  for $vm_name. Test output: $test_action"
+    fi
+  else
+    logger "$bootstrap_file already initialized"
+  fi
 }
