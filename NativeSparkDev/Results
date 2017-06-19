@@ -1,0 +1,8 @@
+for run in ~/share/jobs_*/2017*; do declare -A EXEC_TIME && eval $(grep "EXEC_TIME" $run/config.sh) && declare -A EXEC_STATUS && eval $(grep "EXEC_STATUS" $run/config.sh) && for bench in ${!EXEC_TIME[@]}; do config=${run##*_ETH_}; scale=${config##*_S}; echo -e "${run##*/}\t${config%%_*}\t${scale%%_*}\t$bench\t${EXEC_TIME[$bench]}\t"${EXEC_STATUS[$bench]}"\t\$(grep -q "drop_cache" $run/config.sh && echo drop || echo cached)\t$(grep "^ENGINE=" $run/config.sh|cut -d= -f2)\t$(grep "Spark=" $run/config.sh|cut -d= -f2)\tSMV$(grep "SPARK_MAJOR_VERSION=" $run/config.sh|cut -d= -f2)"; done && unset EXEC_TIME EXEC_STATUS; done|grep -v validate|sort
+
+
+
+
+scp aloja@azure-drill-290-00.westus.cloudapp.azure.com:share/jobs_azure-drill-290/20170615_175039_ETH_SSD_bBench-native-spark_S1_D4_azure-drill-290/* ~/Results
+
+
