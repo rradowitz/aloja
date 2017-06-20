@@ -1,0 +1,47 @@
+#!/bin/sh
+# Automated script to run aloja
+# Goethe University Frankfurt
+# Big Data Lab
+# Author: Raphael Radowitz
+
+source "./home/rradowitz/Documents/aloja/aloja"
+source ./home/rradowitz/Documents/aloja/aloja
+
+
+echo "HH: $hh"
+
+
+#/home/rradowitz/src/spark-2.1.0-bin-hadoop2.7/bin/spark-shell
+
+bench_List="$(seq 5 22)"
+
+h="gg"
+g="hh"
+
+
+echo "$h$g"
+
+
+echo "${h}KK$g"
+
+echo "$(ls /home)"
+#BENCH_LIST=" Hallo" 
+
+# [ "$BENCH_LIST" ]  && echo "test"
+
+#echo "$BENCH_LIST"
+
+#echo "INFO: $(date +"%H:%M:%S") DONE $BENCH_LIST"
+#echo "INFO: $(date) DONE"
+
+for query in $bench_List ; do
+	echo "$query"
+done
+
+echo $bench_List+"TEst"
+$bench_List+="_query_"
+query="5"
+echo "$bench_List"
+
+read -p "Input Selection:" mainmenuinput
+
