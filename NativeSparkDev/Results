@@ -2,7 +2,12 @@ for run in ~/share/jobs_*/2017*; do declare -A EXEC_TIME && eval $(grep "EXEC_TI
 
 
 
+> Results.txt
+
 
 scp aloja@azure-drill-290-00.westus.cloudapp.azure.com:share/jobs_azure-drill-290/20170615_175039_ETH_SSD_bBench-native-spark_S1_D4_azure-drill-290/* ~/Results
 
+scp aloja@azure-drill-290-00.westus.cloudapp.azure.com:share/Results2.txt ~/
 
+
+scp aloja@azure-drill-290-00.westus.cloudapp.azure.com:share/jobs_azure-drill-290/20170627_135558_ETH_SSD_bBench-native-spark_S0_D4_azure-drill-290/run_benchs.sh.log ~/

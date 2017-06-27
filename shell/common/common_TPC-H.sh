@@ -16,9 +16,9 @@ BENCH_DATA_SIZE="$((TPCH_SCALE_FACTOR * 1000000000 ))" #in bytes
 
 TPCH_HDFS_DIR="/tmp/tpch-generate"
 
-if [ ! "$BENCH_SUITE" == "Bench-native-spark" ]; then
+#if [ ! "$BENCH_SUITE" == "Bench-native-spark" ]; then
   TPCH_DB_NAME="tpch_${BENCH_FILE_FORMAT}_${TPCH_SCALE_FACTOR}"
-fi
+#fi
 
 [ ! "$BENCH_LIST" ] && BENCH_LIST="$(seq -f "tpch_query%g" -s " " 1 22)"
 
@@ -114,7 +114,7 @@ tpc-h_load-text(){
 }
 
 tpc-h_delete-text(){
-  if [ ! "$BENCH_KEEP_FILES" == "1" ] && [ ! "$BENCH_LEAVE_SERVICES" "1"  ] ; then
+  if [ ! "$BENCH_KEEP_FILES" == "1" ] && [ ! "$BENCH_LEAVE_SERVICES" == "1" ] ; then
     local bench_name="${FUNCNAME[0]}"
 
     logger "INFO: Deleting external plain tables to save space (if BENCH_KEEP_FILES is not set)"
@@ -165,7 +165,7 @@ tpc-h_validate_load() {
 }
 
 tpc-h_delete_dbgen(){
-  if [ ! "$BENCH_KEEP_FILES" == "1" ] && [ ! "$BENCH_LEAVE_SERVICES" "1"  ] ; then
+  if [ ! "$BENCH_KEEP_FILES" == "1" ] && [ ! "$BENCH_LEAVE_SERVICES" == "1" ] ; then
     logger "INFO: deleting original DBGEN files to save space"
     hadoop_delete_path "$bench_name" "$TPCH_HDFS_DIR/$TPCH_SCALE_FACTOR"
   fi
@@ -177,13 +177,13 @@ if [ ! "$BENCH_KEEP_FILES" ] ; then
     tpc-h_build
 
     # Generate the data
-    if [ "$TPCH_SCALE_FACTOR" == "1" ] ; then
-      tpc-h_cmd_datagen "1"
-    elif [[ "$TPCH_USE_LOCAL_FACTOR" > 0 ]] ; then
+    if [[ "$TPCH_USE_LOCAL_FACTOR" > 0 ]] ; then
       tpc-h_cmd_datagen "$TPCH_USE_LOCAL_FACTOR"
+    elif [ "$TPCH_SCALE_FACTOR" == "1" ] ; then
+      tpc-h_cmd_datagen "1"
     else
-      tpc-h_hadoop_datagen
-    fi
+      tpc-h_hadoop_datagen      
+    fi 
 
     logger "INFO: Data are not deleted"
   else
@@ -197,16 +197,25 @@ tpc-h_datagen() {
     tpc-h_build
 
     # Generate the data
-    if [ "$TPCH_SCALE_FACTOR" == "1" ] ; then
-      tpc-h_cmd_datagen "1"
-    elif [[ "$TPCH_USE_LOCAL_FACTOR" > 0 ]] ; then
+    if [[ "$TPCH_USE_LOCAL_FACTOR" > 0 ]] ; then
       tpc-h_cmd_datagen "$TPCH_USE_LOCAL_FACTOR"
+    elif [ "$TPCH_SCALE_FACTOR" == "1" ] ; then
+      tpc-h_cmd_datagen "1"
     else
-      tpc-h_hadoop_datagen
-    fi
+      tpc-h_hadoop_datagen      
+    fi    
+	
+    #if [ "$TPCH_SCALE_FACTOR" == "1" ] ; then
+    #  tpc-h_cmd_datagen "1"
+    #elif [[ "$TPCH_USE_LOCAL_FACTOR" > 0 ]] ; then
+    #  tpc-h_cmd_datagen "$TPCH_USE_LOCAL_FACTOR"
+    #else
+    #  tpc-h_hadoop_datagen
+      #tpc-h_cmd_datagen
+    #fi
     
     # Keep files for TPCH on native Spark & no need to load into DB
-    if [ ! "$BENCH_SUITE" == "Bench-native-spark" ]; then
+    if [ ! "$BENCH_SUITE" == "Bench-native-spark-2" ]; then
       # Load external tables as text
       tpc-h_load-text
 

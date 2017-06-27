@@ -9,6 +9,8 @@ set_spark_requires
 # Bench list - queries 1 to 22
 BENCH_LIST="$(seq 2)"
 
+echo "$TPCH_HDFS_DIR"
+
 # Set Bench name
 bench_name="TPCH-on-Native_Spark"
 native_spark_folder_name="native_spark-master"
@@ -49,7 +51,7 @@ benchmark_suite_cleanup() {
 
 benchmark_suite_run() {
   logger "INFO: Running $BENCH_SUITE"
-    
+     
   tpc-h_datagen
 
   BENCH_CURRENT_NUM_RUN="1" #reset the global counter
@@ -81,8 +83,5 @@ benchmark_suite_run() {
 # query for TPCH query
 execute_tpchquery_spark() {
   local query="$1"
-  local 	
-  #execute_spark "$bench_name" "--class main.scala.TpchQuery $native_spark_local_dir/spark-tpc-h-queries_2.11-1.0.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query" "time"
-  #execute_spark-native "$bench_name\"_\"$query" "--class main.scala.TpchQuery $native_spark_local_dir/spark-tpc-h-queries_2.11-1.0.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query" "time"
   execute_spark "${bench_name}_query_$query" "--class main.scala.TpchQuery $native_spark_local_dir/spark-tpc-h-queries_2.11-1.0.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query" "time"
 }

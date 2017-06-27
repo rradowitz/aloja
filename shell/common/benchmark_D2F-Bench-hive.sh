@@ -31,9 +31,6 @@ benchmark_suite_run() {
   logger "INFO: DONE executing $BENCH_SUITE"
 }
 
-
-
-
 # $1 query number
 execute_query_hive() {
   local query="$1"

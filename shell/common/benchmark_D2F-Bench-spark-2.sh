@@ -6,6 +6,12 @@ source_file "$ALOJA_REPO_PATH/shell/common/common_TPC-H.sh"
 source_file "$ALOJA_REPO_PATH/shell/common/common_spark.sh"
 set_spark_requires
 
+echo "=================================================================================================="
+echo "===================================LOCAL-APPS-PATH================================================"
+echo "$(get_local_apps_path)"
+echo "===================================LOCAL-APPS-PATH================================================"
+echo "=================================================================================================="
+
 BENCH_LIST="$(seq -f "tpch_query%g" -s " " 1 3)"
 
 benchmark_suite_run() {
@@ -14,6 +20,7 @@ benchmark_suite_run() {
   tpc-h_datagen
 
   BENCH_CURRENT_NUM_RUN="1" #reset the global counter
+  set hive.metastore.warehouse.dir=/apps/hive/warehouse;	
 
   # Iterate at least one time
   while true; do
