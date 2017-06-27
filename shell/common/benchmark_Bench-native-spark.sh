@@ -41,6 +41,9 @@ benchmark_suite_config() {
 
   initialize_spark_vars
   prepare_spark_config
+
+  logger "INFO: Setting engine to Native-Spark"
+  $ENGINE="Native-Spark"
 }
 
 benchmark_suite_cleanup() {

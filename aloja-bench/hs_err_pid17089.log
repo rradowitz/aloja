@@ -1,0 +1,305 @@
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (mmap) failed to map 716177408 bytes for committing reserved memory.
+# Possible reasons:
+#   The system is out of physical RAM or swap space
+#   In 32 bit mode, the process size limit was hit
+# Possible solutions:
+#   Reduce memory load on the system
+#   Increase physical memory or swap space
+#   Check if swap backing store is full
+#   Use 64 bit Java on a 64 bit OS
+#   Decrease Java heap size (-Xmx/-Xms)
+#   Decrease number of Java threads
+#   Decrease Java thread stack sizes (-Xss)
+#   Set larger code cache with -XX:ReservedCodeCacheSize=
+# This output file may be truncated or incomplete.
+#
+#  Out of Memory Error (os_linux.cpp:2627), pid=17089, tid=0x00007fc22f7a1700
+#
+# JRE version:  (8.0_101-b13) (build )
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (25.101-b13 mixed mode linux-amd64 compressed oops)
+# Failed to write core dump. Core dumps have been disabled. To enable core dumping, try "ulimit -c unlimited" before starting Java again
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x00007fc228011800):  JavaThread "Unknown thread" [_thread_in_vm, id=17110, stack(0x00007fc22f6a1000,0x00007fc22f7a2000)]
+
+Stack: [0x00007fc22f6a1000,0x00007fc22f7a2000],  sp=0x00007fc22f7a0380,  free space=1020k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [libjvm.so+0xac3f0a]  VMError::report_and_die()+0x2ba
+V  [libjvm.so+0x4fbf9b]  report_vm_out_of_memory(char const*, int, unsigned long, VMErrorType, char const*)+0x8b
+V  [libjvm.so+0x9222d3]  os::Linux::commit_memory_impl(char*, unsigned long, bool)+0x103
+V  [libjvm.so+0x922829]  os::pd_commit_memory(char*, unsigned long, unsigned long, bool)+0x29
+V  [libjvm.so+0x91cb2a]  os::commit_memory(char*, unsigned long, unsigned long, bool)+0x2a
+V  [libjvm.so+0x991053]  PSVirtualSpace::expand_by(unsigned long)+0x53
+V  [libjvm.so+0x981177]  PSOldGen::initialize(ReservedSpace, unsigned long, char const*, int)+0xb7
+V  [libjvm.so+0x2d884a]  AdjoiningGenerations::AdjoiningGenerations(ReservedSpace, GenerationSizer*, unsigned long)+0x39a
+V  [libjvm.so+0x945686]  ParallelScavengeHeap::initialize()+0x1d6
+V  [libjvm.so+0xa8c753]  Universe::initialize_heap()+0xf3
+V  [libjvm.so+0xa8c99e]  universe_init()+0x3e
+V  [libjvm.so+0x63bdf5]  init_globals()+0x65
+V  [libjvm.so+0xa70bfe]  Threads::create_vm(JavaVMInitArgs*, bool*)+0x23e
+V  [libjvm.so+0x6d08f4]  JNI_CreateJavaVM+0x74
+C  [libjli.so+0x745e]  JavaMain+0x9e
+C  [libpthread.so.0+0x8184]  start_thread+0xc4
+
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+
+Other Threads:
+
+=>0x00007fc228011800 (exited) JavaThread "Unknown thread" [_thread_in_vm, id=17110, stack(0x00007fc22f6a1000,0x00007fc22f7a2000)]
+
+VM state:not at safepoint (not fully initialized)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+GC Heap History (0 events):
+No events
+
+Deoptimization events (0 events):
+No events
+
+Internal exceptions (0 events):
+No events
+
+Events (0 events):
+No events
+
+
+Dynamic libraries:
+00400000-00401000 r-xp 00000000 08:01 524510                             /scratch/local/aplic2/apps/jdk1.8.0_101/bin/java
+00600000-00601000 rw-p 00000000 08:01 524510                             /scratch/local/aplic2/apps/jdk1.8.0_101/bin/java
+021bc000-021dd000 rw-p 00000000 00:00 0                                  [heap]
+eab00000-100000000 rw-p 00000000 00:00 0 
+7fc218e69000-7fc219000000 rw-p 00000000 00:00 0 
+7fc219000000-7fc219270000 rwxp 00000000 00:00 0 
+7fc219270000-7fc228000000 ---p 00000000 00:00 0 
+7fc228000000-7fc22803a000 rw-p 00000000 00:00 0 
+7fc22803a000-7fc22c000000 ---p 00000000 00:00 0 
+7fc22c117000-7fc22c207000 rw-p 00000000 00:00 0 
+7fc22c207000-7fc22c35c000 ---p 00000000 00:00 0 
+7fc22c35c000-7fc22c412000 rw-p 00000000 00:00 0 
+7fc22c412000-7fc22c7c8000 ---p 00000000 00:00 0 
+7fc22c7c8000-7fc22c7e2000 r-xp 00000000 08:01 524613                     /scratch/local/aplic2/apps/jdk1.8.0_101/jre/lib/amd64/libzip.so
+7fc22c7e2000-7fc22c9e2000 ---p 0001a000 08:01 524613                     /scratch/local/aplic2/apps/jdk1.8.0_101/jre/lib/amd64/libzip.so
+7fc22c9e2000-7fc22c9e3000 rw-p 0001a000 08:01 524613                     /scratch/local/aplic2/apps/jdk1.8.0_101/jre/lib/amd64/libzip.so
+7fc22c9e8000-7fc22c9f2000 r-xp 00000000 08:01 2144                       /lib/x86_64-linux-gnu/libnss_files-2.19.so
+7fc22c9f2000-7fc22cbf1000 ---p 0000a000 08:01 2144                       /lib/x86_64-linux-gnu/libnss_files-2.19.so
+7fc22cbf1000-7fc22cbf2000 r--p 00009000 08:01 2144                       /lib/x86_64-linux-gnu/libnss_files-2.19.so
+7fc22cbf2000-7fc22cbf3000 rw-p 0000a000 08:01 2144                       /lib/x86_64-linux-gnu/libnss_files-2.19.so
+7fc22cbf8000-7fc22cc03000 r-xp 00000000 08:01 2120                       /lib/x86_64-linux-gnu/libnss_nis-2.19.so
+7fc22cc03000-7fc22ce02000 ---p 0000b000 08:01 2120                       /lib/x86_64-linux-gnu/libnss_nis-2.19.so
+7fc22ce02000-7fc22ce03000 r--p 0000a000 08:01 2120                       /lib/x86_64-linux-gnu/libnss_nis-2.19.so
+7fc22ce03000-7fc22ce04000 rw-p 0000b000 08:01 2120                       /lib/x86_64-linux-gnu/libnss_nis-2.19.so
+7fc22ce08000-7fc22ce1f000 r-xp 00000000 08:01 2161                       /lib/x86_64-linux-gnu/libnsl-2.19.so
+7fc22ce1f000-7fc22d01e000 ---p 00017000 08:01 2161                       /lib/x86_64-linux-gnu/libnsl-2.19.so
+7fc22d01e000-7fc22d01f000 r--p 00016000 08:01 2161                       /lib/x86_64-linux-gnu/libnsl-2.19.so
+7fc22d01f000-7fc22d020000 rw-p 00017000 08:01 2161                       /lib/x86_64-linux-gnu/libnsl-2.19.so
+7fc22d020000-7fc22d022000 rw-p 00000000 00:00 0 
+7fc22d028000-7fc22d031000 r-xp 00000000 08:01 2089                       /lib/x86_64-linux-gnu/libnss_compat-2.19.so
+7fc22d031000-7fc22d230000 ---p 00009000 08:01 2089                       /lib/x86_64-linux-gnu/libnss_compat-2.19.so
+7fc22d230000-7fc22d231000 r--p 00008000 08:01 2089                       /lib/x86_64-linux-gnu/libnss_compat-2.19.so
+7fc22d231000-7fc22d232000 rw-p 00009000 08:01 2089                       /lib/x86_64-linux-gnu/libnss_compat-2.19.so
+7fc22d238000-7fc22d262000 r-xp 00000000 08:01 524639                     /scratch/local/aplic2/apps/jdk1.8.0_101/jre/lib/amd64/libjava.so
+7fc22d262000-7fc22d462000 ---p 0002a000 08:01 524639                     /scratch/local/aplic2/apps/jdk1.8.0_101/jre/lib/amd64/libjava.so
+7fc22d462000-7fc22d464000 rw-p 0002a000 08:01 524639                     /scratch/local/aplic2/apps/jdk1.8.0_101/jre/lib/amd64/libjava.so
+7fc22d468000-7fc22d475000 r-xp 00000000 08:01 524593                     /scratch/local/aplic2/apps/jdk1.8.0_101/jre/lib/amd64/libverify.so
+7fc22d475000-7fc22d675000 ---p 0000d000 08:01 524593                     /scratch/local/aplic2/apps/jdk1.8.0_101/jre/lib/amd64/libverify.so
+7fc22d675000-7fc22d677000 rw-p 0000d000 08:01 524593                     /scratch/local/aplic2/apps/jdk1.8.0_101/jre/lib/amd64/libverify.so
+7fc22d678000-7fc22d67f000 r-xp 00000000 08:01 2022                       /lib/x86_64-linux-gnu/librt-2.19.so
+7fc22d67f000-7fc22d87e000 ---p 00007000 08:01 2022                       /lib/x86_64-linux-gnu/librt-2.19.so
+7fc22d87e000-7fc22d87f000 r--p 00006000 08:01 2022                       /lib/x86_64-linux-gnu/librt-2.19.so
+7fc22d87f000-7fc22d880000 rw-p 00007000 08:01 2022                       /lib/x86_64-linux-gnu/librt-2.19.so
+7fc22d880000-7fc22d985000 r-xp 00000000 08:01 2048                       /lib/x86_64-linux-gnu/libm-2.19.so
+7fc22d985000-7fc22db84000 ---p 00105000 08:01 2048                       /lib/x86_64-linux-gnu/libm-2.19.so
+7fc22db84000-7fc22db85000 r--p 00104000 08:01 2048                       /lib/x86_64-linux-gnu/libm-2.19.so
+7fc22db85000-7fc22db86000 rw-p 00105000 08:01 2048                       /lib/x86_64-linux-gnu/libm-2.19.so
+7fc22db88000-7fc22e853000 r-xp 00000000 08:01 524643                     /scratch/local/aplic2/apps/jdk1.8.0_101/jre/lib/amd64/server/libjvm.so
+7fc22e853000-7fc22ea52000 ---p 00ccb000 08:01 524643                     /scratch/local/aplic2/apps/jdk1.8.0_101/jre/lib/amd64/server/libjvm.so
+7fc22ea52000-7fc22eb2b000 rw-p 00cca000 08:01 524643                     /scratch/local/aplic2/apps/jdk1.8.0_101/jre/lib/amd64/server/libjvm.so
+7fc22eb2b000-7fc22eb76000 rw-p 00000000 00:00 0 
+7fc22eb78000-7fc22ed32000 r-xp 00000000 08:01 2028                       /lib/x86_64-linux-gnu/libc-2.19.so
+7fc22ed32000-7fc22ef32000 ---p 001ba000 08:01 2028                       /lib/x86_64-linux-gnu/libc-2.19.so
+7fc22ef32000-7fc22ef36000 r--p 001ba000 08:01 2028                       /lib/x86_64-linux-gnu/libc-2.19.so
+7fc22ef36000-7fc22ef38000 rw-p 001be000 08:01 2028                       /lib/x86_64-linux-gnu/libc-2.19.so
+7fc22ef38000-7fc22ef3d000 rw-p 00000000 00:00 0 
+7fc22ef40000-7fc22ef43000 r-xp 00000000 08:01 2046                       /lib/x86_64-linux-gnu/libdl-2.19.so
+7fc22ef43000-7fc22f142000 ---p 00003000 08:01 2046                       /lib/x86_64-linux-gnu/libdl-2.19.so
+7fc22f142000-7fc22f143000 r--p 00002000 08:01 2046                       /lib/x86_64-linux-gnu/libdl-2.19.so
+7fc22f143000-7fc22f144000 rw-p 00003000 08:01 2046                       /lib/x86_64-linux-gnu/libdl-2.19.so
+7fc22f148000-7fc22f15d000 r-xp 00000000 08:01 401810                     /scratch/local/aplic2/apps/jdk1.8.0_101/lib/amd64/jli/libjli.so
+7fc22f15d000-7fc22f35d000 ---p 00015000 08:01 401810                     /scratch/local/aplic2/apps/jdk1.8.0_101/lib/amd64/jli/libjli.so
+7fc22f35d000-7fc22f35e000 rw-p 00015000 08:01 401810                     /scratch/local/aplic2/apps/jdk1.8.0_101/lib/amd64/jli/libjli.so
+7fc22f360000-7fc22f379000 r-xp 00000000 08:01 2020                       /lib/x86_64-linux-gnu/libpthread-2.19.so
+7fc22f379000-7fc22f578000 ---p 00019000 08:01 2020                       /lib/x86_64-linux-gnu/libpthread-2.19.so
+7fc22f578000-7fc22f579000 r--p 00018000 08:01 2020                       /lib/x86_64-linux-gnu/libpthread-2.19.so
+7fc22f579000-7fc22f57a000 rw-p 00019000 08:01 2020                       /lib/x86_64-linux-gnu/libpthread-2.19.so
+7fc22f57a000-7fc22f57e000 rw-p 00000000 00:00 0 
+7fc22f580000-7fc22f5a3000 r-xp 00000000 08:01 2145                       /lib/x86_64-linux-gnu/ld-2.19.so
+7fc22f690000-7fc22f698000 rw-s 00000000 08:01 263644                     /tmp/hsperfdata_vagrant/17089
+7fc22f69c000-7fc22f6a0000 rw-p 00000000 00:00 0 
+7fc22f6a0000-7fc22f6a1000 r--p 00000000 00:00 0 
+7fc22f6a1000-7fc22f6a4000 ---p 00000000 00:00 0 
+7fc22f6a4000-7fc22f7a2000 rw-p 00000000 00:00 0                          [stack:17110]
+7fc22f7a2000-7fc22f7a3000 r--p 00022000 08:01 2145                       /lib/x86_64-linux-gnu/ld-2.19.so
+7fc22f7a3000-7fc22f7a4000 rw-p 00023000 08:01 2145                       /lib/x86_64-linux-gnu/ld-2.19.so
+7fc22f7a4000-7fc22f7a7000 rw-p 00000000 00:00 0 
+7fc22f7a7000-7fc22f7ab000 rw-p 00000000 00:00 0 
+7ffc3c10f000-7ffc3c131000 rw-p 00000000 00:00 0                          [stack]
+7ffc3c1c8000-7ffc3c1ca000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+
+VM Arguments:
+jvm_args: -Xms1g -Xmx1g 
+java_command: org.apache.spark.deploy.SparkSubmit --class org.apache.spark.sql.hive.thriftserver.SparkSQLCLIDriver spark-internal
+java_class_path (initial): /scratch/local/aloja-bench_3/spark_conf:/scratch/local/aplic2/apps/spark_hive-1.6.2/lib/spark-assembly-1.6.2-hadoop2.6.0.jar:/scratch/local/aplic2/apps/spark_hive-1.6.2/lib/datanucleus-rdbms-3.2.9.jar:/scratch/local/aplic2/apps/spark_hive-1.6.2/lib/datanucleus-api-jdo-3.2.6.jar:/scratch/local/aplic2/apps/spark_hive-1.6.2/lib/datanucleus-core-3.2.10.jar:/scratch/local/aloja-bench_3/hadoop_conf/:/scratch/local/aloja-bench_3/hadoop_conf/:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/lib/apacheds-kerberos-codec-2.0.0-M15.jar:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/lib/zookeeper-3.4.6.jar:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/lib/avro-1.7.4.jar:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/lib/jets3t-0.9.0.jar:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/lib/jsr305-3.0.0.jar:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/lib/jersey-json-1.9.jar:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/lib/api-asn1-api-1.0.0-M20.jar:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/lib/guava-11.0.2.jar:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/lib/jackson-mapper-asl-1.9.13.jar:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/lib/java-xmlbuilder-0.4.jar:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/lib/commons-codec-1.4.jar:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/lib/commons-beanutils-core-1.8.0.jar:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/lib/commons-digester-1.8.jar:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/lib/jaxb-api-2.2.2.jar:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/lib/jetty-6.1.26.jar:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/lib/activation-1.1.jar:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/lib/hadoop-auth-2.7.3.jar:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/li
+Launcher Type: SUN_STANDARD
+
+Environment Variables:
+JAVA_HOME=/scratch/local/aplic2/apps/jdk1.8.0_101
+PATH=/home/vagrant/share/vagrant-99/sw/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/scratch/local/aplic2/apps/jdk1.8.0_101/bin:/scratch/local/aplic2/apps/hadoop-2.7.3/bin:/scratch/local/aplic2/apps/spark_hive-1.6.2/bin:/scratch/local/aloja-bench_3/hadoop_conf:/scratch/local/aloja-bench_3/hadoop_logs::/scratch/local/aplic2/apps/hadoop-2.7.3/bin:/scratch/local/aloja-bench_3/hadoop_logs:spark_hive-1.6.2:/scratch/local/aloja-bench_3/spark_conf:/scratch/local/aloja-bench_3/spark_logs:/scratch/local/aloja-bench_3/hadoop_conf:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/lib/*:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/common/*:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/hdfs:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/hdfs/lib/*:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/hdfs/*:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/yarn/lib/*:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/yarn/*:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/mapreduce/lib/*:/scratch/local/aplic2/apps/hadoop-2.7.3/share/hadoop/mapreduce/*:/scratch/local/aplic2/apps/hadoop-2.7.3/contrib/capacity-scheduler/*.jar:/scratch/local/aplic2/apps/jdk1.8.0_101/bin:/scratch/local/aplic2/apps/hadoop-2.7.3/bin:/scratch/local/aplic2/apps/spark_hive-1.6.2/bin
+SHELL=/bin/bash
+
+Signal Handlers:
+SIGSEGV: [libjvm.so+0xac4790], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGBUS: [libjvm.so+0xac4790], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGFPE: [libjvm.so+0x91f140], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGPIPE: [libjvm.so+0x91f140], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGXFSZ: [libjvm.so+0x91f140], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGILL: [libjvm.so+0x91f140], sa_mask[0]=11111111011111111101111111111110, sa_flags=SA_RESTART|SA_SIGINFO
+SIGUSR1: SIG_DFL, sa_mask[0]=00000000000000000000000000000000, sa_flags=none
+SIGUSR2: [libjvm.so+0x920770], sa_mask[0]=00000000000000000000000000000000, sa_flags=SA_RESTART|SA_SIGINFO
+SIGHUP: SIG_DFL, sa_mask[0]=00000000000000000000000000000000, sa_flags=none
+SIGINT: SIG_DFL, sa_mask[0]=00000000000000000000000000000000, sa_flags=none
+SIGTERM: SIG_DFL, sa_mask[0]=00000000000000000000000000000000, sa_flags=none
+SIGQUIT: SIG_DFL, sa_mask[0]=00000000000000000000000000000000, sa_flags=none
+
+
+---------------  S Y S T E M  ---------------
+
+OS:DISTRIB_ID=Ubuntu
+DISTRIB_RELEASE=14.04
+DISTRIB_CODENAME=trusty
+DISTRIB_DESCRIPTION="Ubuntu 14.04.5 LTS"
+
+uname:Linux 3.13.0-108-generic #155-Ubuntu SMP Wed Jan 11 16:58:52 UTC 2017 x86_64
+libc:glibc 2.19 NPTL 2.19 
+rlimit: STACK 8192k, CORE 0k, NPROC 15936, NOFILE 4096, AS infinity
+load average:3.45 1.76 0.73
+
+/proc/meminfo:
+MemTotal:        2049856 kB
+MemFree:           69820 kB
+Buffers:           10168 kB
+Cached:           638520 kB
+SwapCached:            0 kB
+Active:          1364192 kB
+Inactive:         513964 kB
+Active(anon):    1229688 kB
+Inactive(anon):      916 kB
+Active(file):     134504 kB
+Inactive(file):   513048 kB
+Unevictable:           0 kB
+Mlocked:               0 kB
+SwapTotal:             0 kB
+SwapFree:              0 kB
+Dirty:             44136 kB
+Writeback:             0 kB
+AnonPages:       1229584 kB
+Mapped:            21940 kB
+Shmem:              1024 kB
+Slab:              67692 kB
+SReclaimable:      52980 kB
+SUnreclaim:        14712 kB
+KernelStack:        3568 kB
+PageTables:         8876 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:     1024928 kB
+Committed_AS:    2308492 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:       26700 kB
+VmallocChunk:   34359706104 kB
+HardwareCorrupted:     0 kB
+AnonHugePages:    665600 kB
+HugePages_Total:       0
+HugePages_Free:        0
+HugePages_Rsvd:        0
+HugePages_Surp:        0
+Hugepagesize:       2048 kB
+DirectMap4k:       40896 kB
+DirectMap2M:     2056192 kB
+
+
+CPU:total 2 (2 cores per cpu, 1 threads per core) family 21 model 2 stepping 0, cmov, cx8, fxsr, mmx, sse, sse2, sse3, ssse3, sse4.1, sse4.2, popcnt, avx, aes, clmul, mmxext, lzcnt, sse4a, tsc
+
+/proc/cpuinfo:
+processor	: 0
+vendor_id	: AuthenticAMD
+cpu family	: 21
+model		: 2
+model name	: AMD FX(tm)-8320 Eight-Core Processor
+stepping	: 0
+microcode	: 0x6000626
+cpu MHz		: 3511.794
+cache size	: 2048 KB
+physical id	: 0
+siblings	: 2
+core id		: 0
+cpu cores	: 2
+apicid		: 0
+initial apicid	: 0
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt rdtscp lm rep_good nopl extd_apicid pni pclmulqdq ssse3 cx16 sse4_1 sse4_2 popcnt aes xsave avx lahf_lm cmp_legacy cr8_legacy abm sse4a misalignsse 3dnowprefetch arat vmmcall
+bogomips	: 7023.58
+TLB size	: 1536 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 48 bits physical, 48 bits virtual
+power management:
+
+processor	: 1
+vendor_id	: AuthenticAMD
+cpu family	: 21
+model		: 2
+model name	: AMD FX(tm)-8320 Eight-Core Processor           
+stepping	: 0
+microcode	: 0x6000626
+cpu MHz		: 3511.794
+cache size	: 2048 KB
+physical id	: 0
+siblings	: 2
+core id		: 1
+cpu cores	: 2
+apicid		: 1
+initial apicid	: 1
+fpu		: yes
+fpu_exception	: yes
+cpuid level	: 13
+wp		: yes
+flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt rdtscp lm rep_good nopl extd_apicid pni pclmulqdq ssse3 cx16 sse4_1 sse4_2 popcnt aes xsave avx lahf_lm cmp_legacy cr8_legacy abm sse4a misalignsse 3dnowprefetch arat vmmcall
+bogomips	: 7058.37
+TLB size	: 1536 4K pages
+clflush size	: 64
+cache_alignment	: 64
+address sizes	: 48 bits physical, 48 bits virtual
+power management:
+
+
+
+Memory: 4k page, physical 2049856k(69696k free), swap 0k(0k free)
+
+vm_info: Java HotSpot(TM) 64-Bit Server VM (25.101-b13) for linux-amd64 JRE (1.8.0_101-b13), built on Jun 22 2016 02:59:44 by "java_re" with gcc 4.3.0 20080428 (Red Hat 4.3.0-8)
+
+time: Mon Jun 26 22:48:43 2017
+elapsed time: 0 seconds (0d 0h 0m 0s)
+
