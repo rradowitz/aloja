@@ -14,6 +14,8 @@ echo "==========================================================================
 
 BENCH_LIST="$(seq -f "tpch_query%g" -s " " 1 3)"
 
+BENCH_CONFIG_FOLDERS="$BENCH_CONFIG_FOLDERS hive1_conf_template"
+
 benchmark_suite_run() {
   logger "INFO: Running $BENCH_SUITE"
 

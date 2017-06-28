@@ -7,7 +7,27 @@ for run in ~/share/jobs_*/2017*; do declare -A EXEC_TIME && eval $(grep "EXEC_TI
 
 scp aloja@azure-drill-290-00.westus.cloudapp.azure.com:share/jobs_azure-drill-290/20170615_175039_ETH_SSD_bBench-native-spark_S1_D4_azure-drill-290/* ~/Results
 
-scp aloja@azure-drill-290-00.westus.cloudapp.azure.com:share/Results2.txt ~/
+scp aloja@azure-drill-290-00.westus.cloudapp.azure.com:share/Results.txt ~/
 
 
-scp aloja@azure-drill-290-00.westus.cloudapp.azure.com:share/jobs_azure-drill-290/20170627_135558_ETH_SSD_bBench-native-spark_S0_D4_azure-drill-290/run_benchs.sh.log ~/
+scp aloja@azure-drill-290-00.westus.cloudapp.azure.com:share/jobs_azure-drill-290/20170628_015835_ETH_SSD_bBench-native-spark_S1_D4_azure-drill-290/run_benchs.sh.* ~/
+
+
+scp aloja@azure-drill-290-00.westus.cloudapp.azure.com:/scratch/local/aloja-bench_3/hive_conf ~/test
+
+
+
+
+
+
+
+rsync -avr --exclude='blobs*' --exclude='*.git*' --exclude='aloja-web*' --exclude='*.log' --exclude='*node_modules*' -e 'ssh -i /home/rradowitz/id_rsa -o StrictHostKeyChecking=no' /home/rradowitz/scr/tpch-spark/target/scala-2.11/spark-tpc-h-queries_2.11-1.0.jar "aloja@azure-drill-290-00.westus.cloudapp.azure.com:share/"
+
+
+
+
+
+
+
+ 
+rsync -avr --exclude='blobs*' --exclude='*.git*' --exclude='aloja-web*' --exclude='*.log' --exclude='*node_modules*' -e 'ssh -i /home/rradowitz/id_rsa -o StrictHostKeyChecking=no' /home/rradowitz/Documents/aloja/shell/common/common_TPC-H.sh "aloja@azure-drill-290-00.westus.cloudapp.azure.com:share/branches/npoggi/shell/common"

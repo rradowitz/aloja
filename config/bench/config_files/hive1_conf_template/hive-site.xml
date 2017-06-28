@@ -18,6 +18,11 @@
   </property>
 
   <property>
+    <name>hive.metastore.warehouse.dir</name>
+    <value>hdfs://vagrant-99-00:38020/apps/hive/warehouse</value>
+  </property>
+
+  <property>
     <name>javax.jdo.option.ConnectionDriverName</name>
     <value>##DATABASE_DRIVER_NAME##</value>
   </property>

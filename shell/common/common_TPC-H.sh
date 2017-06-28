@@ -215,7 +215,7 @@ tpc-h_datagen() {
     #fi
     
     # Keep files for TPCH on native Spark & no need to load into DB
-    if [ ! "$BENCH_SUITE" == "Bench-native-spark-2" ]; then
+    if [[ ! "$BENCH_SUITE" == *"native-spark"* ]]; then
       # Load external tables as text
       tpc-h_load-text
 
