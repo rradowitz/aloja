@@ -23,8 +23,9 @@ benchmark_suite_run() {
   tpc-h_datagen
 
   BENCH_CURRENT_NUM_RUN="1" #reset the global counter
-  #set hive.metastore.warehouse.dir=/apps/hive/warehouse;	
+
   echo "=================================================================================================="
+  #set hive.metastore.warehouse.dir=/apps/hive/warehouse;	
   echo "SETTING HIVE METASTORE"
   execute_spark-sql "setting DB" "SET hive.metastore.warehouse.dir=/apps/hive/warehouse;" "time"
   execute_spark-sql "Create TestDB" "Create Database test234;" "time"
@@ -54,5 +55,6 @@ benchmark_suite_run() {
 # $1 query number
 execute_query_spark() {
   local query="$1"
+  #execute_spark-sql "setting DB" "SET hive.metastore.warehouse.dir=/apps/hive/warehouse;" "time"
   execute_spark-sql "$query" "-e \"USE $TPCH_DB_NAME; \$(< $D2F_local_dir/tpch/queries/$query.sql)\"" "time"
 }
