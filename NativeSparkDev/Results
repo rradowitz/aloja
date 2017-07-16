@@ -17,7 +17,7 @@ scp aloja@azure-drill-290-00.westus.cloudapp.azure.com:/scratch/local/aloja-benc
 
 
 
-
+scp -r aloja@azure-drill-290-00.westus.cloudapp.azure.com:share/jobs_azure-drill-290/20170630_132938_ETH_SSD_bBench-native-spark_S500_D4_azure-drill-290 ~/jobs_azure-drill-290/20170630_132938_ETH_SSD_bBench-native-spark_S500_D4_azure-drill-290
 
 
 

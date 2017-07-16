@@ -41,9 +41,6 @@ benchmark_suite_config() {
 
   initialize_spark_vars
   prepare_spark_config
-
-  logger "INFO: Setting engine to Native-Spark"
-  $ENGINE="Native-Spark"
 }
 
 benchmark_suite_cleanup() {
@@ -52,6 +49,9 @@ benchmark_suite_cleanup() {
 
 benchmark_suite_run() {
   logger "INFO: Running $BENCH_SUITE"
+  
+  logger "INFO: Setting engine to Native-Spark"
+  $ENGINE="Native-Spark"
     
   tpc-h_datagen
 
@@ -84,5 +84,5 @@ benchmark_suite_run() {
 # query for TPCH query
 execute_tpchquery_spark() {
   local query="$1"
-  execute_spark "${bench_name}_query_$query" "--class main.scala.TpchQuery $native_spark_local_dir/spark-tpc-h-queries_2.11-1.0.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query" "time"
+  execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $native_spark_local_dir/spark-tpc-h-queries_2.11-1.0.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query" "time"
 }

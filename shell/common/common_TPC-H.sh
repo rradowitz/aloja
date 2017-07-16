@@ -40,7 +40,7 @@ benchmark_suite_config() {
   prepare_hadoop_config "$NET" "$DISK" "$BENCH_SUITE"
   start_hadoop
 
-  if [ ! "$BENCH_SUITE" == "Bench-native-spark" ]; then
+  if [ ! "$BENCH_SUITE" == *"native-spark"* ]; then
     initialize_hive_vars
     prepare_hive_config "$HIVE_SETTINGS_FILE" "$HIVE_SETTINGS_FILE_PATH"
   fi
@@ -157,6 +157,7 @@ tpc-h_validate_load() {
 
   logger "INFO: attempting to validate load and optimize to DB: $TPCH_DB_NAME"
   local db_stats="$(execute_hadoop_new "$bench_name" "fs -du /apps/hive/warehouse/tpch_orc_${TPCH_SCALE_FACTOR}.db" 2>1)"
+  #local db_stats="$(execute_hadoop_new "$bench_name" "fs -du /user/hive/warehouse/tpch_orc_${TPCH_SCALE_FACTOR}.db" 2>1)"
 
   #db_stats="$(echo -e "$db_stats"|grep 'warehouse'|grep -v '-du')" # remove extra linesTPCH_USE_LOCAL_FACTOR
 
@@ -227,9 +228,11 @@ tpc-h_datagen() {
 
       # Delete source files
       tpc-h_delete_dbgen
+    
+      logger "INFO: Data loaded and optimized into database $TPCH_DB_NAME"
+    else
+      logger "INFO: Only generating Data no load into database"	
     fi
-
-    logger "INFO: Data loaded and optimized into database $TPCH_DB_NAME"
   else
     logger "WARNING: reusing HDFS files"
   fi
