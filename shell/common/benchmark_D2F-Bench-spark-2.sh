@@ -6,13 +6,7 @@ source_file "$ALOJA_REPO_PATH/shell/common/common_TPC-H.sh"
 source_file "$ALOJA_REPO_PATH/shell/common/common_spark.sh"
 set_spark_requires
 
-echo "=================================================================================================="
-echo "===================================LOCAL-APPS-PATH================================================"
-echo "$(get_local_apps_path)"
-echo "===================================LOCAL-APPS-PATH================================================"
-echo "=================================================================================================="
-
-BENCH_LIST="$(seq -f "tpch_query%g" -s " " 1 3)"
+BENCH_LIST="$(seq -f "tpch_query%g" -s " " 1 1)"
 
 BENCH_CONFIG_FOLDERS="$BENCH_CONFIG_FOLDERS hive1_conf_template"
 
@@ -23,15 +17,10 @@ benchmark_suite_run() {
   tpc-h_datagen
 
   BENCH_CURRENT_NUM_RUN="1" #reset the global counter
-
-  echo "=================================================================================================="
-  #set hive.metastore.warehouse.dir=/apps/hive/warehouse;	
-  echo "SETTING HIVE METASTORE"
-  execute_spark-sql "setting DB" "SET hive.metastore.warehouse.dir=/apps/hive/warehouse;" "time"
-  execute_spark-sql "Create TestDB" "Create Database test234;" "time"
-  echo "=================================================================================================="
-
-
+  
+  mkdir /scratch/local/aloja-bench_3/spark_conf
+  cp /scratch/local/aloja-bench_3/hive_conf/hive-site.xml /scratch/local/aloja-bench_3/spark_conf
+   
   # Iterate at least one time
   while true; do
     [ "$BENCH_NUM_RUNS" ] && logger "INFO: Starting iteration $BENCH_CURRENT_NUM_RUN of $BENCH_NUM_RUNS"
@@ -55,6 +44,5 @@ benchmark_suite_run() {
 # $1 query number
 execute_query_spark() {
   local query="$1"
-  #execute_spark-sql "setting DB" "SET hive.metastore.warehouse.dir=/apps/hive/warehouse;" "time"
   execute_spark-sql "$query" "-e \"USE $TPCH_DB_NAME; \$(< $D2F_local_dir/tpch/queries/$query.sql)\"" "time"
 }

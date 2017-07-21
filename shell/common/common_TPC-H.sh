@@ -1,7 +1,7 @@
 # Common functions for different TPC-H implementations
 # Based on Hadoop and Hive
 
-if [ "$BENCH_SUITE" == "Bench-native-spark" ]; then
+if [ "$BENCH_SUITE" == *"native-spark"* ]; then
   source_file "$ALOJA_REPO_PATH/shell/common/common_hadoop.sh"
   set_hadoop_requires
 else
@@ -9,16 +9,28 @@ else
   set_hive_requires
 fi
 
-[ ! "$TPCH_SCALE_FACTOR" ] &&  TPCH_SCALE_FACTOR=1 #1 GB min size
-[ ! "$TPCH_USE_LOCAL_FACTOR" ] && TPCH_USE_LOCAL_FACTOR="" #set to a scale factor to use the local DBGEN instead of the M/R version
 
-BENCH_DATA_SIZE="$((TPCH_SCALE_FACTOR * 1000000000 ))" #in bytes
+if [[ "$TPCH_USE_LOCAL_FACTOR" > 0 ]]; then 
+  TPCH_SCALE_FACTOR=$TPCH_USE_LOCAL_FACTOR
+  BENCH_DATA_SIZE="$((TPCH_USE_LOCAL_FACTOR * 1000000000 ))" #in bytes
+else
+  [[ ! "$TPCH_SCALE_FACTOR" ]] && TPCH_SCALE_FACTOR=1 #1 GB min size  
+  BENCH_DATA_SIZE="$((TPCH_SCALE_FACTOR * 1000000000 ))" #in bytes
+fi   
+
+echo "========================================================================================"
+echo "LOCAL:	$TPCH_USE_LOCAL_FACTOR"
+echo "SF:	$TPCH_SCALE_FACTOR"
+echo "========================================================================================"
+
+#[ ! "$TPCH_SCALE_FACTOR" ] &&  TPCH_SCALE_FACTOR=1 #1 GB min size
+#[ ! "$TPCH_USE_LOCAL_FACTOR" ] && TPCH_USE_LOCAL_FACTOR="" #set to a scale factor to use the local DBGEN instead of the M/R version
 
 TPCH_HDFS_DIR="/tmp/tpch-generate"
 
-#if [ ! "$BENCH_SUITE" == "Bench-native-spark" ]; then
+if [ ! "$BENCH_SUITE" == *"native-spark"* ]; then
   TPCH_DB_NAME="tpch_${BENCH_FILE_FORMAT}_${TPCH_SCALE_FACTOR}"
-#fi
+fi
 
 [ ! "$BENCH_LIST" ] && BENCH_LIST="$(seq -f "tpch_query%g" -s " " 1 22)"
 
@@ -127,7 +139,8 @@ tpc-h_load-optimize() {
 
   [ ! "$BUCKETS" ] && BUCKETS=13
 
-  local tables="part partsupp supplier customer orders lineitem nation region"
+  #local tables="part partsupp supplier customer orders lineitem nation region"
+  local tables="part region nation supplier partsupp customer orders lineitem "
 
   local tables_files=""
   for table in $tables ; do

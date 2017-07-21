@@ -14,6 +14,16 @@ benchmark_suite_run() {
 
   BENCH_CURRENT_NUM_RUN="1" #reset the global counter
 
+
+  echo "=============================================================================================================="
+  echo -e "APPS:	$(get_local_apps_path)"
+  echo -e "BENCH:	$(get_local_bench_path)"
+  echo -e "Export:	$(get_spark_exports)"
+  echo "=============================================================================================================="
+
+  mkdir /scratch/local/aloja-bench_3/spark_conf
+  cp /scratch/local/aloja-bench_3/hive_conf/hive-site.xml /scratch/local/aloja-bench_3/spark_conf
+
   # Iterate at least one time
   while true; do
     [ "$BENCH_NUM_RUNS" ] && logger "INFO: Starting iteration $BENCH_CURRENT_NUM_RUN of $BENCH_NUM_RUNS"
@@ -38,4 +48,11 @@ benchmark_suite_run() {
 execute_query_spark() {
   local query="$1"
   execute_spark-sql "$query" "-e \"USE $TPCH_DB_NAME; \$(< $D2F_local_dir/tpch/queries/$query.sql)\"" "time"
+}
+
+prepare_config() {
+  
+  mkdir /scratch/local/aloja-bench_3/spark_conf
+  cp /scratch/local/aloja-bench_3/hive_conf/hive-site.xml /scratch/local/aloja-bench_3/spark_conf
+
 }

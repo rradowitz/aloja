@@ -38,7 +38,8 @@ end
 
 # defaults for cluster
 numberOfNodes = 1   # starts at 0, really means 2
-vmRAM = 3096	
+vmRAM = 6192	
+#vmRAM = 6192
 vmCPUS = 2
 
 # extract relevant values from config files
@@ -176,8 +177,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
       node.vm.provider "virtualbox" do |v|
         v.name = "vagrant-99-" + num.to_s.rjust(2, '0')
-        v.memory = vmRAM #change as needed
-        v.cpus = vmCPUS  #change as needed
+        #v.memory = vmRAM #change as needed
+        #v.cpus = vmCPUS  #change as needed
+        v.memory = 4096 
+        v.cpus = 2
         # Force to use hosts DNS
         v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       end
