@@ -14,13 +14,6 @@ benchmark_suite_run() {
 
   BENCH_CURRENT_NUM_RUN="1" #reset the global counter
 
-
-  echo "=============================================================================================================="
-  echo -e "APPS:	$(get_local_apps_path)"
-  echo -e "BENCH:	$(get_local_bench_path)"
-  echo -e "Export:	$(get_spark_exports)"
-  echo "=============================================================================================================="
-
   mkdir /scratch/local/aloja-bench_3/spark_conf
   cp /scratch/local/aloja-bench_3/hive_conf/hive-site.xml /scratch/local/aloja-bench_3/spark_conf
 
@@ -52,7 +45,9 @@ execute_query_spark() {
 
 prepare_config() {
   
-  mkdir /scratch/local/aloja-bench_3/spark_conf
-  cp /scratch/local/aloja-bench_3/hive_conf/hive-site.xml /scratch/local/aloja-bench_3/spark_conf
+  # Spark needs the hive-site.xml to access metastore
+  # common-spark.sh seems not to work properly
+  mkdir $(get_local_bench_path)/spark_conf
+  cp $(get_local_bench_path)/hive_conf/hive-site.xml $(get_local_bench_path)/spark_conf
 
 }
