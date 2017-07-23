@@ -18,11 +18,6 @@ else
   BENCH_DATA_SIZE="$((TPCH_SCALE_FACTOR * 1000000000 ))" #in bytes
 fi   
 
-echo "========================================================================================"
-echo "LOCAL:	$TPCH_USE_LOCAL_FACTOR"
-echo "SF:	$TPCH_SCALE_FACTOR"
-echo "========================================================================================"
-
 #[ ! "$TPCH_SCALE_FACTOR" ] &&  TPCH_SCALE_FACTOR=1 #1 GB min size
 #[ ! "$TPCH_USE_LOCAL_FACTOR" ] && TPCH_USE_LOCAL_FACTOR="" #set to a scale factor to use the local DBGEN instead of the M/R version
 
@@ -42,9 +37,11 @@ fi
 [ ! "$(which gcc)" ] && sudo apt-get install -y -q gcc make
 [ ! "$(which gcc)" ] && die "Build tools not installed for TPC-H datagen to work"
 
-D2F_folder_name="D2F-Bench-master"
-BENCH_REQUIRED_FILES["$D2F_folder_name"]="http://github.com/Aloja/D2F-Bench/archive/master.zip"
-D2F_local_dir="$(get_local_apps_path)/$D2F_folder_name"
+if [ ! "$BENCH_SUITE" == *"native-spark"* ]; then
+  D2F_folder_name="D2F-Bench-master"
+  BENCH_REQUIRED_FILES["$D2F_folder_name"]="http://github.com/Aloja/D2F-Bench/archive/master.zip"
+  D2F_local_dir="$(get_local_apps_path)/$D2F_folder_name"
+fi
 
 
 benchmark_suite_config() {

@@ -4,6 +4,11 @@
 
 source_file "$ALOJA_REPO_PATH/shell/common/common_TPC-H.sh"
 
+source_file "$ALOJA_REPO_PATH/shell/common/common_hive.sh"
+set_hive_requires
+prepare_hive_config
+initialize_hive_vars
+
 benchmark_suite_run() {
   logger "INFO: Running $BENCH_SUITE"
 

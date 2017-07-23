@@ -14,8 +14,9 @@ benchmark_suite_run() {
 
   BENCH_CURRENT_NUM_RUN="1" #reset the global counter
 
-  mkdir /scratch/local/aloja-bench_3/spark_conf
-  cp /scratch/local/aloja-bench_3/hive_conf/hive-site.xml /scratch/local/aloja-bench_3/spark_conf
+  #mkdir /scratch/local/aloja-bench_3/spark_conf
+  #cp /scratch/local/aloja-bench_3/hive_conf/hive-site.xml /scratch/local/aloja-bench_3/spark_conf
+  prepare_config
 
   # Iterate at least one time
   while true; do

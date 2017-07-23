@@ -92,11 +92,11 @@ get_hadoop_job_config() {
     if [ "$clusterType" != "PaaS" ]; then
       if [ ! -z "$MAPS_MB" ]; then
         job_config+=" -Dmapreduce.map.memory.mb='${MAPS_MB}'"
-        #job_config+=" -Dmapreduce.map.memory.mb='1024'"
+        #job_config+=" -Dmapreduce.map.memory.mb='896'"
       fi
       if [ ! -z "$REDUCES_MB" ]; then
         job_config+=" -Dmapreduce.reduce.memory.mb='${REDUCES_MB}'"
-        #job_config+=" -Dmapreduce.reduce.memory.mb='1024'"
+        #job_config+=" -Dmapreduce.reduce.memory.mb='896'"
       fi
     fi
   else

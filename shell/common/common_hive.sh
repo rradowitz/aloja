@@ -71,7 +71,9 @@ get_hive_cmd() {
     local hive_bin="$HIVE_HOME/bin/hive"
   fi
 
-  [ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i $HIVE_SETTINGS_FILE"
+  #[ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i /scratch/local/aloja-bench_3$HIVE_SETTINGS_FILE"
+  #[ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i $HIVE_SETTINGS_FILE"
+  [ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i $HDD$HIVE_SETTINGS_FILE"
 
   hive_cmd="$hive_exports\n$hive_bin $hive_settings_file" #\ncd '$HDD_TMP';
 
@@ -100,7 +102,7 @@ execute_hive(){
 
 initialize_hive_vars() {
 
-  BENCH_CONFIG_FOLDERS="$BENCH_CONFIG_FOLDERS hive_conf_template"
+  BENCH_CONFIG_FOLDERS="$BENCH_CONFIG_FOLDERS hive1_conf_template"
 
   if [ "$clusterType" == "PaaS" ]; then
     HIVE_HOME="/usr"

@@ -7,9 +7,7 @@ source_file "$ALOJA_REPO_PATH/shell/common/common_spark.sh"
 set_spark_requires
 
 # Bench list - queries 1 to 22
-BENCH_LIST="$(seq 2)"
-
-echo "$TPCH_HDFS_DIR"
+BENCH_LIST="4 18"
 
 # Set Bench name
 bench_name="TPCH-on-Native_Spark"
@@ -51,7 +49,10 @@ benchmark_suite_cleanup() {
 
 benchmark_suite_run() {
   logger "INFO: Running $BENCH_SUITE"
-     
+  
+  logger "INFO: Setting engine to Native-Spark"
+  #$ENGINE="Native-Spark"
+    
   tpc-h_datagen
 
   BENCH_CURRENT_NUM_RUN="1" #reset the global counter
@@ -82,6 +83,7 @@ benchmark_suite_run() {
 # BenchNum for data output_dir
 # query for TPCH query
 execute_tpchquery_spark() {
-  local query="$1"
+  #local query="$1"
   execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $native_spark_local_dir/spark-tpc-h-queries_2.11-1.0.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query" "time"
+  #execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $native_spark_local_dir/spark-tpc-h-queries_2.11-1.0.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query --driver-memory 1024m --executor-memory 1024m" "time"
 }
