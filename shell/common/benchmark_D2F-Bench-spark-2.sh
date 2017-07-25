@@ -6,7 +6,7 @@ source_file "$ALOJA_REPO_PATH/shell/common/common_TPC-H.sh"
 source_file "$ALOJA_REPO_PATH/shell/common/common_spark.sh"
 set_spark_requires
 
-BENCH_LIST="$(seq -f "tpch_query%g" -s " " 1 1)"
+BENCH_LIST="$(seq -f "tpch_query%g" -s " " 16)"
 
 BENCH_CONFIG_FOLDERS="$BENCH_CONFIG_FOLDERS hive1_conf_template"
 

@@ -73,7 +73,12 @@ get_hive_cmd() {
 
   #[ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i /scratch/local/aloja-bench_3$HIVE_SETTINGS_FILE"
   #[ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i $HIVE_SETTINGS_FILE"
-  [ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i $HDD$HIVE_SETTINGS_FILE"
+  
+  if [ "$BENCH_SUITE" == "BigBench" ] || [[ "$BENCH_SUITE" =~ "D2F-Bench-spark"* ]]; then
+    [ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i $HIVE_SETTINGS_FILE"  
+  else
+    [ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i $HDD$HIVE_SETTINGS_FILE"
+  fi
 
   hive_cmd="$hive_exports\n$hive_bin $hive_settings_file" #\ncd '$HDD_TMP';
 

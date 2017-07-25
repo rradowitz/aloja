@@ -9,6 +9,8 @@ set_hive_requires
 prepare_hive_config
 initialize_hive_vars
 
+BENCH_LIST="6"
+
 benchmark_suite_run() {
   logger "INFO: Running $BENCH_SUITE"
 

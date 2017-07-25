@@ -7,7 +7,7 @@ source_file "$ALOJA_REPO_PATH/shell/common/common_spark.sh"
 set_spark_requires
 
 # Bench list - queries 1 to 22
-BENCH_LIST="4 18"
+BENCH_LIST="6"
 
 # Set Bench name
 bench_name="TPCH-on-Native_Spark"

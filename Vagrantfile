@@ -25,12 +25,14 @@ IO.foreach(node_config) do |line|
 end
 
 # env overrides
-vm_mem = 2560
+#vm_mem = 2560
+vm_mem = 1024
 if ENV['WMEM']
   vm_mem = ENV['WMEM']
 end
 
-vm_cpus = 4
+#vm_cpus = 4
+vm_cpus = 2
 if ENV['WCPUS']
   vm_cpus = ENV['WCPUS']
 end
@@ -179,8 +181,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         v.name = "vagrant-99-" + num.to_s.rjust(2, '0')
         #v.memory = vmRAM #change as needed
         #v.cpus = vmCPUS  #change as needed
-        v.memory = 4096 
-        v.cpus = 2
+        v.memory = 4608 
+        v.cpus = 3
+	#v.memory = 4096 
+        #v.cpus = 2
         # Force to use hosts DNS
         v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       end

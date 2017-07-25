@@ -1,9 +1,15 @@
-declare -x Z_PENIS="Home"
-export BAM_BAM='/scratch/local/aplic2/apps/jdk1.8.0_101';
 
 
-ls ~
+BAVA_XMX="-Xmx4096m"
 
-mkdir pwd/test
+MAPS_MB="${BAVA_XMX//[!0-9]}"
+
+
+
+echo $MAPS_MB
+
 
 read -p "Select Benchmark: " benchinput
+
+
+read -p tes
