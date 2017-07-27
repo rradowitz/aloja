@@ -8,6 +8,7 @@ set_spark_requires
 
 # Bench list - queries 1 to 22
 BENCH_LIST="$(seq 22)"
+#BENCH_LIST="7"
 
 # Set Bench name
 bench_name="TPCH-on-Native_Spark"
@@ -84,5 +85,6 @@ benchmark_suite_run() {
 # query for TPCH query
 execute_tpchquery_spark() {
   local query="$1"
-  execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $native_spark_local_dir/spark-tpc-h-queries_2.11-1.0.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query" "time"
+  #execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $native_spark_local_dir/spark-tpc-h-queries_2.11-1.0.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query" "time"
+  execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $native_spark_local_dir/spark-tpc-h-queries_2.11-1.0-D2F.jar $scaleFactor $BENCH_CURRENT_NUM_RUN $query" "time"
 }
