@@ -12,11 +12,17 @@ benchmark_suite_run() {
   tpc-h_datagen
 
   BENCH_CURRENT_NUM_RUN="1" #reset the global counter
+   
+  if [ ! -d "$SPARK_CONF_DIR" ]; then
+    SPARK_CONF_DIR="$(get_spark_conf_dir)" 
+    #local_prepare_config
+    prepare_spark_config
+    echo "was los???"
+  else
+    echo "was los??? else wawrsdfnsakdjfbpalhpojdjgb===================================================00"
+  fi	
 
-  mkdir /scratch/local/aloja-bench_3/spark_conf
-  cp /scratch/local/aloja-bench_3/hive_conf/hive-site.xml /scratch/local/aloja-bench_3/spark_conf
-  #prepare_config
-
+  
   # Iterate at least one time
   while true; do
     [ "$BENCH_NUM_RUNS" ] && logger "INFO: Starting iteration $BENCH_CURRENT_NUM_RUN of $BENCH_NUM_RUNS"
@@ -43,11 +49,9 @@ execute_query_spark() {
   execute_spark-sql "$query" "-e \"USE $TPCH_DB_NAME; \$(< $D2F_local_dir/tpch/queries/$query.sql)\"" "time"
 }
 
-prepare_config() {
-  
+local_prepare_config() {
   # Spark needs the hive-site.xml to access metastore
   # common-spark.sh seems not to work properly
-  mkdir $(get_local_bench_path)/spark_conf
-  cp $(get_local_bench_path)/hive_conf/hive-site.xml $(get_local_bench_path)/spark_conf
-
+  $DSH "mkdir $SPARK_CONF_DIR"
+  $DSH "cp $(get_local_bench_path)/hive_conf/hive-site.xml $SPARK_CONF_DIR/" 
 }

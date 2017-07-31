@@ -6,9 +6,14 @@ set_hadoop_requires
 set_spark_requires() {
   [ ! "$SPARK_VERSION" ] && die "No SPARK_VERSION specified"
 
-  if [ "$BENCH_SUITE" == "BigBench" ] || [[ "$BENCH_SUITE" =~ "D2F"* ]]; then
+  if [[ "$BENCH_SUITE" == "BigBench" ]] || [[ "$BENCH_SUITE" =~ "D2F"* ]] || [[ "$BENCH_SUITE" == *"orc"* ]]; then
     log_WARN "Setting Spark version to $SPARK_HIVE (for Hive compatibility)"
-    BENCH_REQUIRED_FILES["$SPARK_HIVE"]="http://aloja.bsc.es/public/files/spark_hive_ubuntu-1.6.2.tar.gz"
+    if [[ "$BENCH_SUITE" == *"orc"* ]]; then      
+      BENCH_REQUIRED_FILES["$SPARK_HIVE"]="https://www.dropbox.com/s/594lej94evl5lj2/spark_hive-2.0.2.tar.gz"
+      #$DSH "cp /home/vagrant/share/spark_hive-2.0.2 /scratch/local/aplic2/apps"
+    else 	
+      BENCH_REQUIRED_FILES["$SPARK_HIVE"]="http://aloja.bsc.es/public/files/spark_hive_ubuntu-1.6.2.tar.gz"
+    fi
     SPARK_VERSION=$SPARK_HIVE
     SPARK_FOLDER=$SPARK_HIVE
   else
@@ -116,8 +121,11 @@ initialize_spark_vars() {
 get_spark_major_version() {
   local spark_string="$SPARK_VERSION"
   local major_version=""
-
-  if [[ "$spark_string" == "$SPARK_HIVE" ]] ; then
+  
+  #TODO: get major spark version from string
+  if [[ "$BENCH_SUITE" == *"orc"* ]]; then
+    major_version="2"
+  elif [[ "$spark_string" == "$SPARK_HIVE" ]] ; then
     major_version="1"
   elif [[ "$spark_string" == *"k-1"* ]] ; then
     major_version="1"
@@ -199,8 +207,7 @@ prepare_spark_config() {
     subs=$(get_spark_substitutions)
     $DSH "/usr/bin/perl -i -pe \"$subs\" $SPARK_CONF_DIR/*"
     #$DSH "cp $(get_local_bench_path)/hadoop_conf/slaves $SPARK_CONF_DIR/slaves"
-  fi
-  
+  fi  
   $DSH "cp $(get_local_bench_path)/hive_conf/hive-site.xml $SPARK_CONF_DIR/"  #Spark needs Hive-Site.xml in the config dir to access Hive metastore
 }
 

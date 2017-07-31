@@ -1,12 +1,24 @@
 
 
-BAVA_XMX="-Xmx4096m"
+echo "$(seq 15 22)"
 
-MAPS_MB="${BAVA_XMX//[!0-9]}"
+VALID_PASSWORD="secret" #this is our password.
+
+echo "Please enter the password:"
+read PASSWORD
+
+if [[ "$PASSWORD" = "$VALID_PASSWORD" ]]; then
+	echo "You have access!"
+        echo "$PASSWORD"
+        echo "$VALID_PASSWORD"
+else
+	echo "ACCESS DENIED!"
+        echo "$PASSWORD"
+        echo "$VALID_PASSWORD"
+fi
 
 
 
-echo $MAPS_MB
 
 
 read -p "Select Benchmark: " benchinput

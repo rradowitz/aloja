@@ -68,13 +68,14 @@ get_hive_cmd() {
     hive_exports=""
   else
     hive_exports="$(get_hive_exports)"
-    local hive_bin="$HIVE_HOME/bin/hive"
+    local hive_bin="$HIVE_HOME/bin/hive"    
   fi
 
   #[ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i /scratch/local/aloja-bench_3$HIVE_SETTINGS_FILE"
   #[ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i $HIVE_SETTINGS_FILE"
   
-  if [ "$BENCH_SUITE" == "BigBench" ] || [[ "$BENCH_SUITE" =~ "D2F-Bench-spark"* ]]; then
+  #if [ "$BENCH_SUITE" == "BigBench" ] || [[ "$BENCH_SUITE" == "D2F-Bench-spark" ]]; then
+  if [ "$BENCH_SUITE" == "BigBench" ]; then
     [ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i $HIVE_SETTINGS_FILE"  
   else
     [ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i $HDD$HIVE_SETTINGS_FILE"
@@ -106,7 +107,6 @@ execute_hive(){
 }
 
 initialize_hive_vars() {
-
   BENCH_CONFIG_FOLDERS="$BENCH_CONFIG_FOLDERS hive1_conf_template"
 
   if [ "$clusterType" == "PaaS" ]; then

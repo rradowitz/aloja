@@ -1,13 +1,28 @@
 # TPC-H benchmark from Todor Ivanov https://github.com/t-ivanov/D2F-Bench/
 # Benchmark to test Spark installation and configurations
 
+
+local filetype="$1"
+
+
+if [[ "$1" == "text" ]]; then
+  echo "================================================================="
+  echo "sauber"
+  echo "================================================================="
+else 
+  echo "================================================================="
+  echo "shit"
+  echo "================================================================="
+fi
+ 
+
 source_file "$ALOJA_REPO_PATH/shell/common/common_TPC-H.sh"
 
 source_file "$ALOJA_REPO_PATH/shell/common/common_spark.sh"
 set_spark_requires
 
 # Bench list - queries 1 to 22
-BENCH_LIST="6"
+BENCH_LIST=" "
 
 # Set Bench name
 bench_name="TPCH-on-Native_Spark"

@@ -6,9 +6,9 @@ source_file "$ALOJA_REPO_PATH/shell/common/common_TPC-H.sh"
 source_file "$ALOJA_REPO_PATH/shell/common/common_spark.sh"
 set_spark_requires
 
-# Bench list - queries 1 to 22
+# Setting bench list - queries 1 to 22
 BENCH_LIST="$(seq 22)"
-#BENCH_LIST="7"
+
 
 # Set Bench name
 bench_name="TPCH-on-Native_Spark"
@@ -19,7 +19,6 @@ BENCH_REQUIRED_FILES["$native_spark_folder_name"]="https://github.com/rradowitz/
 # Local
 native_spark_local_dir="$(get_local_apps_path)/$native_spark_folder_name"
 native_spark_local_JarPath="/vagrant/blobs/aplic2/tarballs"
-#native_spark_local_JarPath_2="/scratch/local/aplic2/apps/Aloja-nativeSpark-master"
 
 # HDFS
 native_spark_hdfs_dir="/$native_spark_folder"
@@ -49,10 +48,10 @@ benchmark_suite_cleanup() {
 }
 
 benchmark_suite_run() {
-  logger "INFO: Running $BENCH_SUITE"
+logger "INFO: Running $BENCH_SUITE on Text"
   
   logger "INFO: Setting engine to Native-Spark"
-  $ENGINE="Native-Spark"
+  ENGINE="Native-Spark"
     
   tpc-h_datagen
 

@@ -1,12 +1,15 @@
 # Common functions for different TPC-H implementations
 # Based on Hadoop and Hive
+#
 
-if [ "$BENCH_SUITE" == *"native-spark"* ]; then
+if [[ "$BENCH_SUITE" == *"native-spark"* ]] && [[ ! "$BENCH_SUITE" == *"orc"* ]]; then
   source_file "$ALOJA_REPO_PATH/shell/common/common_hadoop.sh"
   set_hadoop_requires
 else
   source_file "$ALOJA_REPO_PATH/shell/common/common_hive.sh"
-  set_hive_requires
+  set_hive_requires  
+  initialize_hive_vars  
+  prepare_hive_config
 fi
 
 
@@ -23,7 +26,7 @@ fi
 
 TPCH_HDFS_DIR="/tmp/tpch-generate"
 
-if [ ! "$BENCH_SUITE" == *"native-spark"* ]; then
+if [[ ! "$BENCH_SUITE" == *"native-spark" ]] || [[ "$BENCH_SUITE" == *"orc"* ]]; then
   TPCH_DB_NAME="tpch_${BENCH_FILE_FORMAT}_${TPCH_SCALE_FACTOR}"
 fi
 
@@ -37,7 +40,7 @@ fi
 [ ! "$(which gcc)" ] && sudo apt-get install -y -q gcc make
 [ ! "$(which gcc)" ] && die "Build tools not installed for TPC-H datagen to work"
 
-if [ ! "$BENCH_SUITE" == *"native-spark"* ]; then
+if [ ! "$BENCH_SUITE" == *"native-spark" ] || [ "$BENCH_SUITE" == *"orc"* ]; then
   D2F_folder_name="D2F-Bench-master"
   BENCH_REQUIRED_FILES["$D2F_folder_name"]="http://github.com/Aloja/D2F-Bench/archive/master.zip"
   D2F_local_dir="$(get_local_apps_path)/$D2F_folder_name"
@@ -48,10 +51,15 @@ benchmark_suite_config() {
   initialize_hadoop_vars
   prepare_hadoop_config "$NET" "$DISK" "$BENCH_SUITE"
   start_hadoop
-
-  if [ ! "$BENCH_SUITE" == *"native-spark"* ]; then
-    initialize_hive_vars
-    prepare_hive_config "$HIVE_SETTINGS_FILE" "$HIVE_SETTINGS_FILE_PATH"
+  
+  #if [ ! "$BENCH_SUITE" == *"native-spark"* ] || [ "$BENCH_SUITE" == *"orc"* ]; then  
+  initialize_hive_vars
+  prepare_hive_config "$HIVE_SETTINGS_FILE" "$HIVE_SETTINGS_FILE_PATH"
+  #fi
+  
+  if [[ "$BENCH_SUITE" == *"D2F-Bench-spark"* ]]; then  
+    initialize_spark_vars
+    prepare_spark_config   
   fi
 }
 
@@ -136,8 +144,8 @@ tpc-h_load-optimize() {
 
   [ ! "$BUCKETS" ] && BUCKETS=13
 
-  #local tables="part partsupp supplier customer orders lineitem nation region"
-  local tables="part region nation supplier partsupp customer orders lineitem "
+  local tables="part partsupp supplier customer orders lineitem nation region"
+  #local tables="part region nation supplier partsupp customer orders lineitem "
 
   local tables_files=""
   for table in $tables ; do
@@ -226,7 +234,7 @@ tpc-h_datagen() {
     #fi
     
     # Keep files for TPCH on native Spark & no need to load into DB
-    if [[ ! "$BENCH_SUITE" == *"native-spark"* ]]; then
+    if [[ ! "$BENCH_SUITE" == *"native-spark"*  ]] || [[ "$BENCH_SUITE" == *"orc"*  ]]; then
       # Load external tables as text
       tpc-h_load-text
 
