@@ -6,14 +6,9 @@ set_hadoop_requires
 set_spark_requires() {
   [ ! "$SPARK_VERSION" ] && die "No SPARK_VERSION specified"
 
-  if [[ "$BENCH_SUITE" == "BigBench" ]] || [[ "$BENCH_SUITE" =~ "D2F"* ]] || [[ "$BENCH_SUITE" == *"orc"* ]]; then
+  if [[ "$BENCH_SUITE" =~ "BigBench"* || "$BENCH_SUITE" =~ "D2F"* || ! "$NATIVE_FORMAT" == "text" ]]; then
     log_WARN "Setting Spark version to $SPARK_HIVE (for Hive compatibility)"
-    if [[ "$BENCH_SUITE" == *"orc"* ]]; then      
-      BENCH_REQUIRED_FILES["$SPARK_HIVE"]="https://www.dropbox.com/s/594lej94evl5lj2/spark_hive-2.0.2.tar.gz"
-      #$DSH "cp /home/vagrant/share/spark_hive-2.0.2 /scratch/local/aplic2/apps"
-    else 	
-      BENCH_REQUIRED_FILES["$SPARK_HIVE"]="http://aloja.bsc.es/public/files/spark_hive_ubuntu-1.6.2.tar.gz"
-    fi
+    BENCH_REQUIRED_FILES["$SPARK_HIVE"]="http://aloja.bsc.es/public/aplic2/tarballs/$SPARK_HIVE.tar.gz"
     SPARK_VERSION=$SPARK_HIVE
     SPARK_FOLDER=$SPARK_HIVE
   else
@@ -121,15 +116,10 @@ initialize_spark_vars() {
 get_spark_major_version() {
   local spark_string="$SPARK_VERSION"
   local major_version=""
-  
-  #TODO: get major spark version from string
-  if [[ "$BENCH_SUITE" == *"orc"* ]]; then
-    major_version="2"
-  elif [[ "$spark_string" == "$SPARK_HIVE" ]] ; then
+
+  if [[ "$spark_string" == *"-1"* ]] ; then
     major_version="1"
-  elif [[ "$spark_string" == *"k-1"* ]] ; then
-    major_version="1"
-  elif [[ "$spark_string" == *"k-2"* ]] ; then
+  elif [[ "$spark_string" == *"-2"* ]] ; then
     major_version="2"
   else
     logger "WARNING: Cannot determine Spark major version."
@@ -149,6 +139,8 @@ get_spark_substitutions() {
   EXECUTOR_INSTANCES="$(printf %.$2f $(echo "(($numberOfNodes)*($NUM_EXECUTOR_NODE))" | bc))" # default should be 1 executor per node
 
   #EXECUTOR_INSTANCES="$(printf %.$2f $(echo "($EXECUTOR_INSTANCES + ($NUM_EXECUTOR_NODE-1))" | bc))"
+
+  [ ! "$SPARK_MAJOR_VERSION" ] && SPARK_MAJOR_VERSION="0"
 
   cat <<EOF
 s,##JAVA_HOME##,$(get_java_home),g;
@@ -190,6 +182,8 @@ s,##SPARK##,$SPARK_HOME/bin/spark,g;
 s,##SPARK_CONF##,$SPARK_CONF_DIR,g;
 s,##SPARK_INSTANCES##,$EXECUTOR_INSTANCES,g;
 s,##EXECUTOR_CORES##,$EXECUTOR_CORES,g;
+s,##SPARK_MAJOR_VERSION##,$SPARK_MAJOR_VERSION,g;
+s,##SPARK_MEMORY_OVERHEAD##,$SPARK_MEMORY_OVERHEAD,g;
 s,##EXECUTOR_MEM##,$EXECUTOR_MEM,g
 EOF
 }

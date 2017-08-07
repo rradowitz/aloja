@@ -34,7 +34,7 @@ benchmark_suite_config() {
   initialize_hive_vars
   prepare_hive_config "$HIVE_SETTINGS_FILE" "$HIVE_SETTINGS_FILE_PATH"
 
-  if [ "$ENGINE" == "spark_sql" ] || [ "$HIVE_ML_FRAMEWORK" == "spark" ]; then
+  if [ ! -z "$use_spark" ]; then
     initialize_spark_vars
     prepare_spark_config
   fi
@@ -112,10 +112,8 @@ benchmark_cleanAll() {
   local cmd
 
   for scale_factor in $BB_SCALE_FACTORS ; do
-    cmd+="cleanAll -U -z ${BIG_BENCH_PARAMETERS_FILE}_$scale_factor; "
+    execute_BigBench "$bench_name" "cleanAll -U -z ${BIG_BENCH_PARAMETERS_FILE}_$scale_factor" "$cmd" "time" "$scale_factor"
   done
-
-  execute_BigBench "$bench_name" "$cmd" "time"
 }
 
 # $1: Scale factor to use

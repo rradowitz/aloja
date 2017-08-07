@@ -232,11 +232,11 @@ mkdir -p \${targetdir}/sw/bin || exit 1
 tarball1='bash-4.4.tar.gz'
 dir1=\${tarball1%.tar.gz}
 
-#wget -nv \"http://ftp.gnu.org/gnu/bash/\${tarball1}\" || exit 1
-#rm -rf -- \"\${dir1}\" || exit 1
+wget -nv \"http://ftp.gnu.org/gnu/bash/\${tarball1}\" || exit 1
+rm -rf -- \"\${dir1}\" || exit 1
 
 # first, build the library
-#{ tar -xf \"\${tarball1}\" && rm \"\${tarball1}\"; } || exit 1
+{ tar -xf \"\${tarball1}\" && rm \"\${tarball1}\"; } || exit 1
 
 cd \"\${dir1}\" || exit 1
 
@@ -245,8 +245,6 @@ make -j4 || exit 1
 make install || exit 1
 
 # we know that \${targetdir}/sw/bin is in our path because the deployment configures it
-
-#mv \${targetdir}/sw/bin/{dsh,dsh.bin}
 
 # install wrapper to not depend on config file
 
@@ -315,7 +313,7 @@ chmod +x \${targetdir}/sw/bin/dsh || exit 1
 }
 
 # Builds specified sysstat version and copies it to bin dir
-# $1 path to copy the compiled binaries to (optional)
+# $1 DEPRECATED PARAM path to copy the compiled binaries to (optional)
 # $2 sysstat version (optional)
 vm_build_sar(){
   local bin_path="${1:-\$HOME/share/sw/bin}"
@@ -1205,12 +1203,11 @@ vm_build_required() {
     if [ "$vm_name" = "$(get_master_name)" ]; then
       log_INFO "Building required packages on master node: $vm_name"
 
-      local bin_path="\$HOME/share/sw/bin"
 
       # Build sysstat always to have a fix and updated version for aloja
       local required_sysstat_version="11.4.2"
       if [[ "$required_sysstat_version" != "$(vm_execute "sar -V|head -n +1|cut -d ' ' -f3")" ]] ; then
-        vm_build_sar "$bin_path"
+        vm_build_sar
       fi
 
       local test_action="$(vm_execute "which dsh && echo '$testKey'")"
@@ -1222,11 +1219,14 @@ vm_build_required() {
       local minimum_BASH_version="4.2"
       local current_BASH_version="$(vm_execute "bash --version|head -n +1|cut -d ' ' -f4")"
       if [[ "$minimum_BASH_version" != "$(smaller_version "$current_BASH_version" "$minimum_BASH_version")" ]] ; then
-        log_INFO "Building DSH, found version $current_BASH_version"
+        log_INFO "Building BASH, found version $current_BASH_version"
         vm_build_bash
         # Update the version
         current_BASH_version="$(vm_execute "bash --version|head -n +1|cut -d ' ' -f4")"
       fi
+
+
+      local bin_path="\$HOME/share/$clusterName/sw/bin"
 
       local test_action="$(vm_execute "ls \"$bin_path/sar\" && dsh --version |grep 'Junichi' && echo '$testKey'")"
       if [[ "$test_action" == *"$testKey"* && "$minimum_BASH_version" == "$(smaller_version "$current_BASH_version" "$minimum_BASH_version")" ]] ; then
@@ -1303,7 +1303,8 @@ check_bootstraped() {
   fi
 
   if [ $result -eq 255 ]; then
-    die "cannot check bootstrap file status (SSH error?)"
+    die "cannot check bootstrap file status (SSH error?)
+DEBUG: ssh -i $(get_ssh_key) $(eval echo $sshOptions) -o PasswordAuthentication=no $(get_ssh_user)@$(get_ssh_host) -p $(get_ssh_port)"
   fi
 
   #set lock

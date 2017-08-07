@@ -1,5 +1,14 @@
 
 
+teta=$1
+
+if [ $teta == "orc" ]; then
+  echo "GEHT"
+else
+  echo "NEIN"
+fi
+
+
 echo "$(seq 15 22)"
 
 VALID_PASSWORD="secret" #this is our password.

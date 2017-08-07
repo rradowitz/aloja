@@ -1,5 +1,11 @@
 # Start Spark if needed
-if [ "$ENGINE" == "spark_sql" ] || [ "$HIVE_ML_FRAMEWORK" == "spark" ]; then
+if [ "$ENGINE" == "spark_sql" ] || [ "$HIVE_ML_FRAMEWORK" == "spark" ] || [ "$HIVE_ML_FRAMEWORK" == "spark-csv" ] || [ "$HIVE_ML_FRAMEWORK" == "spark-2" ]; then
+
+  if [ "$HIVE_ML_FRAMEWORK" == "spark-2" ]; then
+    logger "WARNING: Using spark 2 as SQL engine and Machine Learning framework"
+    SPARK_HIVE="spark_hive-2.1.1"
+  fi
+  use_spark=true
   source_file "$ALOJA_REPO_PATH/shell/common/common_spark.sh"
   set_spark_requires
 #  HIVE_ENGINE="mr"
@@ -20,7 +26,7 @@ if [ "$BB_SERVER_DERBY" == "true" ]; then
   set_derby_requires
 fi
 
-BIG_BENCH_FOLDER="Big-Data-Benchmark-for-Big-Bench-master"
+BIG_BENCH_FOLDER="Big-Data-Benchmark-for-Big-Bench"
 
 if [ "$BENCH_SCALE_FACTOR" == 0 ] ; then #Should only happen when BENCH_SCALE_FACTOR is not set and BENCH_DATA_SIZE < 1GB
   logger "WARNING: BigBench SCALE_FACTOR is set below minimum value, setting BENCH_SCALE_FACTOR to 1 (1 GB) and recalculating BENCH_DATA_SIZE"
@@ -34,7 +40,7 @@ set_BigBench_requires() {
 
   MAHOUT_FOLDER="apache-mahout-distribution-${MAHOUT_VERSION}"
 
-  BENCH_REQUIRED_FILES["$BIG_BENCH_FOLDER"]="https://github.com/Aloja/Big-Data-Benchmark-for-Big-Bench/archive/master.zip"
+  BENCH_REQUIRED_FILES["$BIG_BENCH_FOLDER"]="http://aloja.bsc.es/public/aplic2/tarballs/Big-Data-Benchmark-for-Big-Bench.tar.gz"
   #BENCH_REQUIRED_FILES["$BIG_BENCH_FOLDER"]="https://github.com/Aloja/Big-Data-Benchmark-for-Big-Bench_OLD/archive/master.zip" #Old BB version
   BENCH_REQUIRED_FILES["$MAHOUT_FOLDER"]="https://archive.apache.org/dist/mahout/$MAHOUT_VERSION/apache-mahout-distribution-${MAHOUT_VERSION}.tar.gz"
 
@@ -73,7 +79,7 @@ get_BigBench_exports() {
     $(get_hive_exports)
     export PATH='$PATH:$BENCH_HADOOP_DIR/bin:$MAHOUT_HOME/bin';"
 
-    if [ "$ENGINE" == "spark_sql" ] || [ "$HIVE_ML_FRAMEWORK" == "spark" ]; then
+    if [ ! -z "$use_spark" ]; then
       to_export_spark="$(get_spark_exports)"
       to_export+="$to_export_spark"
     fi
@@ -162,15 +168,15 @@ execute_parallel_BigBench(){
 }
 
 prepare_BigBench_minimum_dataset() {
-    #Copying main data
-    execute_hadoop_new "$bench_name" "fs -mkdir -p $HDFS_DATA_ABSOLUTE_PATH/bigbench_min/base/"
-    execute_hadoop_new "$bench_name" "fs -copyFromLocal $BIG_BENCH_HOME/data-generator/minimum_dataset/BB_data/* $HDFS_DATA_ABSOLUTE_PATH/bigbench_min/base"
-    execute_hadoop_new "$bench_name" "fs -ls $HDFS_DATA_ABSOLUTE_PATH/bigbench_min/base"
+  #Copying main data
+  execute_hadoop_new "$bench_name" "fs -mkdir -p $HDFS_DATA_ABSOLUTE_PATH/bigbench_min/base/"
+  execute_hadoop_new "$bench_name" "fs -copyFromLocal $BIG_BENCH_HOME/data-generator/minimum_dataset/BB_data/* $HDFS_DATA_ABSOLUTE_PATH/bigbench_min/base"
+  execute_hadoop_new "$bench_name" "fs -ls $HDFS_DATA_ABSOLUTE_PATH/bigbench_min/base"
 
-    #Copying data_refresh
-    execute_hadoop_new "$bench_name" "fs -mkdir -p $HDFS_DATA_ABSOLUTE_PATH/bigbench_min/data_refresh"
-    execute_hadoop_new "$bench_name" "fs -copyFromLocal $BIG_BENCH_HOME/data-generator/minimum_dataset/BB_data_refresh/* $HDFS_DATA_ABSOLUTE_PATH/bigbench_min/data_refresh/"
-    execute_hadoop_new "$bench_name" "fs -ls $HDFS_DATA_ABSOLUTE_PATH/bigbench_min/data_refresh"
+  #Copying data_refresh
+  execute_hadoop_new "$bench_name" "fs -mkdir -p $HDFS_DATA_ABSOLUTE_PATH/bigbench_min/data_refresh"
+  execute_hadoop_new "$bench_name" "fs -copyFromLocal $BIG_BENCH_HOME/data-generator/minimum_dataset/BB_data_refresh/* $HDFS_DATA_ABSOLUTE_PATH/bigbench_min/data_refresh/"
+  execute_hadoop_new "$bench_name" "fs -ls $HDFS_DATA_ABSOLUTE_PATH/bigbench_min/data_refresh"
 }
 
 initialize_BigBench_vars() {
@@ -214,8 +220,9 @@ get_BigBench_substitutions() {
 
   #TODO: Eliminate the Beeline patch when hive 2 client is available.
   if [ "$HIVE_MAJOR_VERSION" == "2" ]; then # Temporal patch to use Hive2 in HDI until they upgrade it to use Hive client.
-    bin="beeline"
-    hive_params="-n hive -p hive -u '${BB_ZOOKEEPER_QUORUM}'"
+    #bin="beeline"
+    bin="hive"
+#    hive_params="-n hive -p hive -u '${BB_ZOOKEEPER_QUORUM}'"
   else
     bin="hive"
   fi
@@ -223,8 +230,7 @@ get_BigBench_substitutions() {
   if [ "$clusterType" == "PaaS" ]; then
     java_bin="$(which java)"
     hive_bin="$HIVE_HOME/bin/${bin}"
-    spark_params="--driver-memory 5g" #BB is memory intensive in the driver, 1GB (default) is not enough (override)
-
+    spark_params="--driver-memory 5g --conf spark.sql.crossJoin.enabled=true" #BB is memory intensive in the driver, 1GB (default) is not enough (override)
   else
     java_bin="$(get_java_home)/bin/java"
     hive_bin="$HIVE_HOME/bin/${bin}"
@@ -234,6 +240,9 @@ get_BigBench_substitutions() {
       spark_database_opts="--jars "
     fi
   fi
+
+  # To prevent a syntax error in BigBench in case it is not set
+  [ ! "$SPARK_MAJOR_VERSION" ] && SPARK_MAJOR_VERSION="0"
 
 #TODO spacing when a @ is found
     cat <<EOF
@@ -278,6 +287,7 @@ s,##HADOOP_CONF##,$HADOOP_CONF_DIR,g;
 s,##HADOOP_LIBS##,$BENCH_HADOOP_DIR/lib/native,g;
 s,##SPARK##,$SPARK_HOME/bin/spark-sql,g;
 s,##SPARK_SUBMIT##,$SPARK_HOME/bin/spark-submit,g;
+s,##SPARK_MAJOR_VERSION##,$SPARK_MAJOR_VERSION,g;
 s,##SCALE##,$BENCH_SCALE_FACTOR,g;
 s,##SPARK_PARAMS##,$spark_params,g;
 s,##BB_HDFS_ABSPATH##,$BB_HDFS_ABSPATH,g;
@@ -329,7 +339,7 @@ prepare_BigBench() {
   $DSH "/usr/bin/perl -i -pe \"$subs\" $BIG_BENCH_CONF_DIR/engines/hive/conf/engineSettings.conf"
   $DSH "/usr/bin/perl -i -pe \"$subs\" $BIG_BENCH_CONF_DIR/engines/spark_sql/conf/engineSettings.conf"
 
-  if [[ "$USE_EXTERNAL_DATABASE" == "true" ]]  && [[ "$ENGINE" == "spark_sql" || "$HIVE_ML_FRAMEWORK" == "spark" ]]; then
+  if [[ "$USE_EXTERNAL_DATABASE" == "true" ]]  && [[ ! -z "$use_spark" ]]; then
     logger "WARNING: copying Hive-site.xml to spark conf folder"
     $DSH "cp $(get_local_bench_path)/hive_conf/hive-site.xml $SPARK_CONF_DIR/"
   fi
@@ -356,17 +366,21 @@ save_BigBench() {
   fi
 
   # Copy to the query results to the job folder
-  execute_hadoop_new "$bench_name" "fs -copyToLocal $HDFS_DATA_ABSOLUTE_PATH/query_results/* $JOB_PATH/$bench_name_num/BigBench_results"
-  # Then ALWAYS delete from HDFS, as they take a LOT of space
-  execute_hadoop_new "$bench_name" "fs -rm $HDFS_DATA_ABSOLUTE_PATH/query_results/*"
-
-  # If the scale factor is >1, we want to truncate the results as the are quite large.  And only 1GB validates
-  if (( BENCH_SCALE_FACTOR > 1 )); then
-    log_INFO "Truncating results to 10K lines for scale factor $BENCH_SCALE_FACTOR"
-    execute_master "find $JOB_PATH/$bench_name_num/BigBench_results -type f -exec sed -i '10001,$ d'"
+  if [[ "BENCH_SCALE_FACTOR" == "1" ]]; then
+    log_INFO "Saving HDFS query results into bench folder"
+    execute_hadoop_new "$bench_name" "fs -copyToLocal $HDFS_DATA_ABSOLUTE_PATH/query_results/* $JOB_PATH/$bench_name_num/BigBench_results"
+  else
+    # If the scale factor is >1, we want to truncate the results as the are quite large.  And only 1GB validates
+    #  if (( BENCH_SCALE_FACTOR > 1 )); then
+    #    log_INFO "Truncating results to 10K lines for scale factor $BENCH_SCALE_FACTOR"
+    #    execute_master "find $JOB_PATH/$bench_name_num/BigBench_results -type f -exec sed -i '10001,$ d'"
+    #  fi
+    log_WARN "Not saving BigBench results into folder as they are over 1GB"
   fi
 
-
+  # Then ALWAYS delete from HDFS, as they take a LOT of space
+  log_INFO "Deleting HDFS query results"
+  execute_hadoop_new "$bench_name" "fs -rm $HDFS_DATA_ABSOLUTE_PATH/query_results/*"
 
   # Compressing BigBench config
   execute_master "$bench_name" "cd  $(get_local_bench_path) && tar -cjf $JOB_PATH/BigBench_conf.tar.bz2 BigBench_conf"

@@ -8,26 +8,26 @@ set_hive_requires() {
 
   if [ "$clusterType" != "PaaS" ]; then
     if [ "$(get_hadoop_major_version)" == "2" ]; then
-      # TODO need to fix the paths for Hive
-      BENCH_REQUIRED_FILES["$HIVE_VERSION"]="http://www-us.apache.org/dist/hive/hive-1.2.2/$HIVE_VERSION.tar.gz"
+      BENCH_REQUIRED_FILES["apache-hive-$HIVE_VERSION-bin"]="http://archive.apache.org/dist/hive/$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz"
       if [ "$HIVE_ENGINE" == "tez" ]; then
         source_file "$ALOJA_REPO_PATH/shell/common/common_tez.sh"
         set_tez_requires
       fi
     else
-      BENCH_REQUIRED_FILES["$HIVE_VERSION"]="http://www-us.apache.org/dist/hive/stable/$HIVE_VERSION.tar.gz"
+      BENCH_REQUIRED_FILES["apache-hive-$HIVE_VERSION-bin"]="http://archive.apache.org/dist/hive/$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz"
       #BENCH_REQUIRED_FILES["apache-hive-0.13.1-bin"]="https://archive.apache.org/dist/hive/hive-0.13.1/apache-hive-0.13.1-bin.tar.gz"
     fi
   fi
 
-  if [ ! "$BB_ZOOKEEPER_QUORUM" ]; then #TODO need to add on-premise support
-    HIVE_MAJOR_VERSION="1"
-  else
+  if [ "$(get_hive_major_version)" == "2" ]; then
+    logger "WARNING: Hive major version is 2, using Hive $HIVE_VERSION"
     HIVE_MAJOR_VERSION="2"
+    BENCH_CONFIG_FOLDERS="$BENCH_CONFIG_FOLDERS hive2_conf_template"
+  else
+    logger "WARNING: Hive major version is 1, using Hive $HIVE_VERSION"
+    HIVE_MAJOR_VERSION="1"
+    BENCH_CONFIG_FOLDERS="$BENCH_CONFIG_FOLDERS hive1_conf_template"
   fi
-
-  #also set the config here
-  BENCH_CONFIG_FOLDERS="$BENCH_CONFIG_FOLDERS hive1_conf_template"
 }
 
 # Helper to print a line with required exports
@@ -40,7 +40,7 @@ get_hive_exports() {
  else
     to_export="$(get_hadoop_exports)
 export HIVE_VERSION='$HIVE_VERSION';
-export HIVE_HOME='$(get_local_apps_path)/${HIVE_VERSION}';
+export HIVE_HOME='$HIVE_HOME';
 export HIVE_CONF_DIR='$HIVE_CONF_DIR';"
 
     if [ "$EXECUTE_TPCH" ]; then
@@ -55,12 +55,11 @@ export HIVE_CONF_DIR='$HIVE_CONF_DIR';"
   fi
 }
 
-# Returns the the path to the hadoop binary with the proper exports
+# Returns the path to the hadoop binary with the proper exports
 get_hive_cmd() {
   local hive_exports
   local hive_cmd
-  local hive_bin
-  local hive_settings_file
+  local hive_bin  local hive_settings_file
 
   # if in PaaS use the bin in PATH and no exports
   if [ "$clusterType" == "PaaS" ]; then
@@ -71,16 +70,12 @@ get_hive_cmd() {
     local hive_bin="$HIVE_HOME/bin/hive"    
   fi
 
-  #[ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i /scratch/local/aloja-bench_3$HIVE_SETTINGS_FILE"
-  #[ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i $HIVE_SETTINGS_FILE"
-  
-  #if [ "$BENCH_SUITE" == "BigBench" ] || [[ "$BENCH_SUITE" == "D2F-Bench-spark" ]]; then
-  if [ "$BENCH_SUITE" == "BigBench" ]; then
-    [ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i $HIVE_SETTINGS_FILE"  
-  else
-    [ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i $HDD$HIVE_SETTINGS_FILE"
-  fi
-
+  #if [[ ! "$NATIVE_FORMAT" == "text" || "$BENCH_SUITE" == "D2F-Bench-spark"* ]]; then
+  #  [ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i $HDD$HIVE_SETTINGS_FILE"
+  #else
+  [ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i $HIVE_SETTINGS_FILE"
+  #fi
+ 
   hive_cmd="$hive_exports\n$hive_bin $hive_settings_file" #\ncd '$HDD_TMP';
 
   echo -e "$hive_cmd"
@@ -114,7 +109,7 @@ initialize_hive_vars() {
     HIVE_CONF_DIR="/etc/hive/conf"
     [ ! "$HIVE_SETTINGS_FILE" ] && HIVE_SETTINGS_FILE="$HDD/hive_conf/hive.settings_PaaS"
   else
-    HIVE_HOME="$(get_local_apps_path)/${HIVE_VERSION}"
+    HIVE_HOME="$(get_local_apps_path)/apache-hive-${HIVE_VERSION}-bin"
     HIVE_CONF_DIR="$HDD/hive_conf"
 
     [ ! "$HIVE_SETTINGS_FILE" ] && HIVE_SETTINGS_FILE="$HDD/hive_conf/hive.settings"
@@ -124,6 +119,21 @@ initialize_hive_vars() {
       prepare_tez_config
     fi
   fi
+}
+
+get_hive_major_version() {
+  local hive_string="$HIVE_VERSION"
+  local major_version=""
+
+  if [[ "$hive_string" == "1."* ]] ; then
+    major_version="1"
+  elif [[ "$hive_string" == "2."* ]] ; then
+    major_version="2"
+  else
+    logger "WARNING: Cannot determine hive major version."
+  fi
+
+  echo -e "$major_version"
 }
 
 # Sets the substitution values for the hive config
@@ -221,10 +231,11 @@ prepare_hive_config() {
     log_INFO "Listing hive warehouse permissions (but not changing them)"
     execute_hadoop_new "Hive folders" "fs -ls /user/hive/ /hive/warehouse/"
 
-    $DSH "mkdir -p $(get_hive_conf_dir); cp -r $(get_local_configs_path)/hive1_conf_template/hive.settings_PaaS $(get_hive_conf_dir);"
+    $DSH "mkdir -p $(get_hive_conf_dir); cp -r $(get_local_configs_path)/hive$(get_hive_major_version)_conf_template/hive.settings_PaaS $(get_hive_conf_dir);"
+
   else
     logger "INFO: Preparing Hive run specific config"
-    $DSH "mkdir -p $(get_hive_conf_dir) $HDD/hive_logs; cp -r $(get_local_configs_path)/hive1_conf_template/* $(get_hive_conf_dir);"
+    $DSH "mkdir -p $(get_hive_conf_dir) $HDD/hive_logs; cp -r $(get_local_configs_path)/hive$(get_hive_major_version)_conf_template/* $(get_hive_conf_dir);"
 
     # Get the values
     subs=$(get_hive_substitutions)
@@ -247,7 +258,7 @@ $(get_perl_exports)
 
     # Make sure default folders exists in Hadoop
     create_hive_folders
-
+    create_db_schema
   fi
 }
 
@@ -260,6 +271,16 @@ create_hive_folders() {
     #execute_hadoop_new "Hive folders" "fs -chmod g+w /tmp"
     #execute_hadoop_new "Hive folders" "fs -chmod g+w /user/hive/warehouse"
   fi
+}
+
+create_db_schema() {
+    #Initiate DB schema, support only for DERBY now...
+    if [ "$DELETE_HDFS" == "1" ]  && [ "$HIVE_MAJOR_VERSION" == "2" ]; then
+       cmd="$(get_hadoop_exports)
+       $(get_hive_exports)
+       $HIVE_HOME/bin/schematool -initSchema -dbType derby"
+       execute_master "Init Hive DB schema" "$cmd"
+    fi
 }
 
 # $1 bench

@@ -2,14 +2,13 @@
 # Based on Hadoop and Hive
 #
 
-if [[ "$BENCH_SUITE" == *"native-spark"* ]] && [[ ! "$BENCH_SUITE" == *"orc"* ]]; then
+#if [[ "$BENCH_SUITE" == *"native-spark"* ]] && [[ ! "$BENCH_SUITE" == *"orc"* ]]; then
+if [[ "$NATIVE_FORMAT" == "text" ]]; then
   source_file "$ALOJA_REPO_PATH/shell/common/common_hadoop.sh"
   set_hadoop_requires
 else
   source_file "$ALOJA_REPO_PATH/shell/common/common_hive.sh"
   set_hive_requires  
-  initialize_hive_vars  
-  prepare_hive_config
 fi
 
 
@@ -26,7 +25,7 @@ fi
 
 TPCH_HDFS_DIR="/tmp/tpch-generate"
 
-if [[ ! "$BENCH_SUITE" == *"native-spark" ]] || [[ "$BENCH_SUITE" == *"orc"* ]]; then
+if [[ ! "$NATIVE_FORMAT" == "text" ]]; then
   TPCH_DB_NAME="tpch_${BENCH_FILE_FORMAT}_${TPCH_SCALE_FACTOR}"
 fi
 
@@ -40,24 +39,22 @@ fi
 [ ! "$(which gcc)" ] && sudo apt-get install -y -q gcc make
 [ ! "$(which gcc)" ] && die "Build tools not installed for TPC-H datagen to work"
 
-if [ ! "$BENCH_SUITE" == *"native-spark" ] || [ "$BENCH_SUITE" == *"orc"* ]; then
-  D2F_folder_name="D2F-Bench-master"
-  BENCH_REQUIRED_FILES["$D2F_folder_name"]="http://github.com/Aloja/D2F-Bench/archive/master.zip"
-  D2F_local_dir="$(get_local_apps_path)/$D2F_folder_name"
-fi
-
+D2F_folder_name="D2F-Bench-master"
+BENCH_REQUIRED_FILES["$D2F_folder_name"]="http://github.com/Aloja/D2F-Bench/archive/master.zip"
+D2F_local_dir="$(get_local_apps_path)/$D2F_folder_name"
 
 benchmark_suite_config() {
   initialize_hadoop_vars
   prepare_hadoop_config "$NET" "$DISK" "$BENCH_SUITE"
   start_hadoop
   
-  #if [ ! "$BENCH_SUITE" == *"native-spark"* ] || [ "$BENCH_SUITE" == *"orc"* ]; then  
-  initialize_hive_vars
-  prepare_hive_config "$HIVE_SETTINGS_FILE" "$HIVE_SETTINGS_FILE_PATH"
-  #fi
+  # Set hive for ORC
+  if [[ ! "$NATIVE_FORMAT" == "text" || "$BENCH_SUITE" == *"D2F-Bench-spark"* ]]; then
+    initialize_hive_vars  
+    prepare_hive_config "$HIVE_SETTINGS_FILE" "$HIVE_SETTINGS_FILE_PATH"
+  fi
   
-  if [[ "$BENCH_SUITE" == *"D2F-Bench-spark"* ]]; then  
+  if [[ "$BENCH_SUITE" == *"D2F-Bench-spark"* || "$BENCH_SUITE" =~ "Native-spark"* ]]; then  
     initialize_spark_vars
     prepare_spark_config   
   fi
@@ -131,12 +128,12 @@ tpc-h_load-text(){
 }
 
 tpc-h_delete-text(){
-  if [ ! "$BENCH_KEEP_FILES" == "1" ] && [ ! "$BENCH_LEAVE_SERVICES" == "1" ] ; then
+  #if [ ! "$BENCH_KEEP_FILES" == "1" ] && [ ! "$BENCH_LEAVE_SERVICES" == "1" ] ; then
     local bench_name="${FUNCNAME[0]}"
 
     logger "INFO: Deleting external plain tables to save space (if BENCH_KEEP_FILES is not set)"
     clean_HDFS "$bench_name" "$TPCH_HDFS_DIR/$TPCH_SCALE_FACTOR"
-  fi
+  #fi
 }
 
 tpc-h_load-optimize() {
@@ -145,7 +142,6 @@ tpc-h_load-optimize() {
   [ ! "$BUCKETS" ] && BUCKETS=13
 
   local tables="part partsupp supplier customer orders lineitem nation region"
-  #local tables="part region nation supplier partsupp customer orders lineitem "
 
   local tables_files=""
   for table in $tables ; do
@@ -223,18 +219,10 @@ tpc-h_datagen() {
     else
       tpc-h_hadoop_datagen      
     fi    
-	
-    #if [ "$TPCH_SCALE_FACTOR" == "1" ] ; then
-    #  tpc-h_cmd_datagen "1"
-    #elif [[ "$TPCH_USE_LOCAL_FACTOR" > 0 ]] ; then
-    #  tpc-h_cmd_datagen "$TPCH_USE_LOCAL_FACTOR"
-    #else
-    #  tpc-h_hadoop_datagen
-      #tpc-h_cmd_datagen
-    #fi
-    
-    # Keep files for TPCH on native Spark & no need to load into DB
-    if [[ ! "$BENCH_SUITE" == *"native-spark"*  ]] || [[ "$BENCH_SUITE" == *"orc"*  ]]; then
+  
+    # Keep files for TPCH on native Spark & no need to load into DB       
+    if [[ ! "$NATIVE_FORMAT" == "text" ]]; then
+         
       # Load external tables as text
       tpc-h_load-text
 
