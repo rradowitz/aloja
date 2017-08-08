@@ -1,0 +1,18 @@
+
+
+
+
+
+================================DONE================================================
+
+NATIVE_FORMAT=text NATIVE_API=DS-spse TPCH_SCALE_FACTOR=3 ALOJA_FAST_MODE=1 /vagrant/aloja-bench/run_benchs.sh -b Native-spark -N;
+NATIVE_FORMAT=text NATIVE_API=DF-spse TPCH_SCALE_FACTOR=3 ALOJA_FAST_MODE=1 /vagrant/aloja-bench/run_benchs.sh -b Native-spark -N;
+
+NATIVE_FORMAT=text NATIVE_API=DF TPCH_SCALE_FACTOR=3 ALOJA_FAST_MODE=1 /vagrant/aloja-bench/run_benchs.sh -b Native-spark -S;
+NATIVE_FORMAT=text NATIVE_API=DS TPCH_SCALE_FACTOR=3 ALOJA_FAST_MODE=1 /vagrant/aloja-bench/run_benchs.sh -b Native-spark -N;
+
+NATIVE_FORMAT=orc NATIVE_API=DS TPCH_SCALE_FACTOR=3 ALOJA_FAST_MODE=1 /vagrant/aloja-bench/run_benchs.sh -b Native-spark -N;
+NATIVE_FORMAT=orc NATIVE_API=DF TPCH_SCALE_FACTOR=3 ALOJA_FAST_MODE=1 /vagrant/aloja-bench/run_benchs.sh -b Native-spark -N;
+
+NATIVE_FORMAT=orc-sql NATIVE_API=DF TPCH_SCALE_FACTOR=3 ALOJA_FAST_MODE=1 /vagrant/aloja-bench/run_benchs.sh -b Native-spark -S;
+NATIVE_FORMAT=orc-sql NATIVE_API=DS TPCH_SCALE_FACTOR=3 ALOJA_FAST_MODE=1 /vagrant/aloja-bench/run_benchs.sh -b Native-spark -N;
