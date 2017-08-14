@@ -13,8 +13,6 @@ SPARK_HIVE="spark_hive-2.1.1"
 source_file "$ALOJA_REPO_PATH/shell/common/common_TPC-H.sh"
 source_file "$ALOJA_REPO_PATH/shell/common/common_spark.sh"
 set_spark_requires
-#initialize_spark_vars
-#prepare_spark_config
 
 # Setting bench list - queries 1 to 22
 BENCH_LIST="$(seq 22)"
@@ -47,11 +45,12 @@ fi
 
 # Set output base dir; a subdirectory for each BENCH_CURRENT_NUM_RUN is created
 # Info: do not miss last "/"
-NATIVE_OUTPUT_DIR="/native_spark/output/"
-# Set the output format that; possible values json, csv; default: json
-NATIVE_OUT_FORMAT="json" 
+[ ! "$NATIVE_OUTPUT_DIR" ] && NATIVE_OUTPUT_DIR="/native_spark/output/"
+# Set the output format that; possible values json, csv, orc, parquet; default: json
+[ ! "$NATIVE_OUT_FORMAT" ] && NATIVE_OUT_FORMAT="off"
 # Set if print out; possible values 0 (off) or 1 (on); default: 1
-NATIVE_PRINT="1"
+[ ! "$NATIVE_SPRINT" ] && NATIVE_SPRINT="1"
+
 
 benchmark_suite_run() {
   if [[ "$NATIVE_FORMAT" == "text" ]]; then
@@ -100,28 +99,39 @@ execute_tpchquery_spark() {
 
   if [[ "$NATIVE_FORMAT" == "text" ]]; then
     if [[ "$NATIVE_API" == "DS" ]]; then
-      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-TXT-SC-DS.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query" "time" 
+      #execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-TXT-SC-DS.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query" "time"
+      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-TXT-SC-DS.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FORMAT $NATIVE_API" "time"  
     elif [[ "$NATIVE_API" == "DF" ]]; then
-      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-TXT-SC-DF.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query" "time"
+      #execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-TXT-SC-DF.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query" "time"
+      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-TXT-SC-DF.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FORMAT $NATIVE_API" "time"
     elif [[ "$NATIVE_API" == "DS-spse" ]]; then
-      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-TXT-spSe-DS.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query" "time" 
+      #execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-TXT-spSe-DS.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query" "time"
+      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-TXT-spSe-DS.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FORMAT $NATIVE_API" "time"  
     elif [[ "$NATIVE_API" == "DF-spse" ]]; then
-      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-TXT-spSe-DF.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query" "time"
+      #execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-TXT-spSe-DF.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query" "time"
+      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-TXT-spSe-DF.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FORMAT $NATIVE_API" "time"
     else
       logger "WARN: NO API choosen for $BENCH_SUITE" 
     fi 
   elif [[ "$NATIVE_FORMAT" == "orc" ]]; then
     if [[ "$NATIVE_API" == "DS" ]]; then
-      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-ORC-DS.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query" "time"
+      #execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-ORC-DS.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query" "time"
+      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-ORC-DS.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FORMAT $NATIVE_API" "time"
     elif [[ "$NATIVE_API" == "DF" ]]; then
-      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-ORC-DF.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query" "time"
+      #execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-ORC-DF.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query" "time"
+      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-ORC-DF.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FORMAT $NATIVE_API" "time"
     elif [[ "$NATIVE_API" == "DS-sql" ]]; then
-      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-ORC-SQL-DS.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query" "time"
+      #execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-ORC-SQL-DS.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query" "time"
+      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-ORC-SQL-DS-Filter.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FORMAT $NATIVE_API" "time"
     elif [[ "$NATIVE_API" == "DF-sql" ]]; then
-      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-ORC-SQL-DF.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query" "time"
+      #execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-ORC-SQL-DF.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query" "time"
+      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-ORC-SQL-DF.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FORMAT $NATIVE_API" "time"
     else 
       logger "WARN: NO API choosen for $BENCH_SUITE"
     fi    
+  elif [[ "$NATIVE_FORMAT" == "dev" ]]; then
+      #execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-ORC-DS-PERFOMANT.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query" "time"	
+      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-ORC-SQL-DS-Filter.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FORMAT $NATIVE_API" "time"
   fi
 }
 

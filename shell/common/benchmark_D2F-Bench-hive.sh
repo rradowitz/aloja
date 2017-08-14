@@ -6,10 +6,11 @@ source_file "$ALOJA_REPO_PATH/shell/common/common_TPC-H.sh"
 
 source_file "$ALOJA_REPO_PATH/shell/common/common_hive.sh"
 set_hive_requires
-prepare_hive_config
-initialize_hive_vars
+#prepare_hive_config "$HIVE_SETTINGS_FILE" "$HIVE_SETTINGS_FILE_PATH"
+#initialize_hive_vars
 
-#BENCH_LIST="tpch_query6"
+BENCH_LIST="tpch_query11"
+#BENCH_LIST="$(seq -f "tpch_query%g" -s " " 15 22)"
 
 benchmark_suite_run() {
   logger "INFO: Running $BENCH_SUITE"

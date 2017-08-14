@@ -8,7 +8,7 @@ set_hive_requires() {
 
   if [ "$clusterType" != "PaaS" ]; then
     if [ "$(get_hadoop_major_version)" == "2" ]; then
-      BENCH_REQUIRED_FILES["apache-hive-$HIVE_VERSION-bin"]="http://archive.apache.org/dist/hive/$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz"
+      BENCH_REQUIRED_FILES["apache-hive-$HIVE_VERSION-bin"]="http://archive.apache.org/dist/hive/hive-$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz"
       if [ "$HIVE_ENGINE" == "tez" ]; then
         source_file "$ALOJA_REPO_PATH/shell/common/common_tez.sh"
         set_tez_requires
@@ -59,7 +59,8 @@ export HIVE_CONF_DIR='$HIVE_CONF_DIR';"
 get_hive_cmd() {
   local hive_exports
   local hive_cmd
-  local hive_bin  local hive_settings_file
+  local hive_bin  
+  local hive_settings_file
 
   # if in PaaS use the bin in PATH and no exports
   if [ "$clusterType" == "PaaS" ]; then
@@ -70,11 +71,7 @@ get_hive_cmd() {
     local hive_bin="$HIVE_HOME/bin/hive"    
   fi
 
-  #if [[ ! "$NATIVE_FORMAT" == "text" || "$BENCH_SUITE" == "D2F-Bench-spark"* ]]; then
-  #  [ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i $HDD$HIVE_SETTINGS_FILE"
-  #else
   [ "$HIVE_SETTINGS_FILE" ] && hive_settings_file="-i $HIVE_SETTINGS_FILE"
-  #fi
  
   hive_cmd="$hive_exports\n$hive_bin $hive_settings_file" #\ncd '$HDD_TMP';
 
@@ -274,13 +271,13 @@ create_hive_folders() {
 }
 
 create_db_schema() {
-    #Initiate DB schema, support only for DERBY now...
-    if [ "$DELETE_HDFS" == "1" ]  && [ "$HIVE_MAJOR_VERSION" == "2" ]; then
-       cmd="$(get_hadoop_exports)
-       $(get_hive_exports)
-       $HIVE_HOME/bin/schematool -initSchema -dbType derby"
-       execute_master "Init Hive DB schema" "$cmd"
-    fi
+  #Initiate DB schema, support only for DERBY now...
+  if [ "$DELETE_HDFS" == "1" ]  && [ "$HIVE_MAJOR_VERSION" == "2" ]; then
+     cmd="$(get_hadoop_exports)
+     $(get_hive_exports)
+     $HIVE_HOME/bin/schematool -initSchema -dbType derby"
+     execute_master "Init Hive DB schema" "$cmd"
+  fi
 }
 
 # $1 bench

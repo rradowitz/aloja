@@ -36,16 +36,15 @@ object TpchQuery {
 
   def outputDF(df: DataFrame, outputDir: String, className: String, outputformat: String, sprint: Int): Unit = {
 
-    if (outputDir == null || outputDir == "")
-      df.collect().foreach(println)
-    else
-      if (outputformat == "orc" || outputDir == "json" || outputDir == "csv" || outputDir == "parquet")
-      	df.write.mode("overwrite").format(outputformat).option("header", "true").save(outputDir + "/" + className + ".out")
-      	//df.write.mode("overwrite").format("com.databricks.spark.csv").option("header", "true").save(outputDir + "/" + className)
-      else
-        df.write.mode("overwrite").json(outputDir + "/" + className + ".out") // json to avoid alias
-      if (sprint == 1)
-        df.collect().foreach(println)		
+    if (sprint == 1)
+      df.collect().foreach(println)	
+     
+    if (outputformat != "off")
+      if (outputDir != null || outputDir != "")
+        if (outputformat == "orc" || outputformat == "json" || outputformat == "csv" || outputformat == "parquet")
+      	  df.write.mode("overwrite").format(outputformat).option("header", "true").save(outputDir + "/" + className + ".out")
+          //df.write.mode("overwrite").format("com.databricks.spark.csv").option("header", "true").save(outputDir + "/" + className) 
+          //df.write.mode("overwrite").json(outputDir + "/" + className + ".out") // json to avoid alias  
   }
 
   def executeQueries(sc: SparkContext, schemaProvider: TpchSchemaProvider, scaleFactor: Int, benchNum: Int ,queryNum: Int, outputdir: String, outputformat: String, sprint: Int): ListBuffer[(String, Float)] = {
@@ -91,6 +90,8 @@ object TpchQuery {
     var outputdir = ""
     var outputformat = ""
     var sprint = 1
+    var nFormat = ""
+    var nAPI = ""
     if (args.length > 0)
       scaleFactor = args(0).toInt
       benchNum = args(1).toInt
@@ -99,6 +100,8 @@ object TpchQuery {
       outputdir = args(4).toString
       outputformat = args(5).toString
       sprint = args(6).toInt
+      nFormat = args(7).toString
+      nAPI = args(8).toString
    
     val conf = new SparkConf().setAppName("TPCH on native Spark")
     val sc = new SparkContext(conf)
@@ -121,7 +124,7 @@ object TpchQuery {
 
     output.foreach {
       //case (key, value) => bw.write(f"${key}%s\t${value}%1.8f\n")
-      case (key, value) => bw.write(f"${key}%s\t${value}%1.8f\t" + scaleFactor.toString + "\t" + now().toString + "\n" + benchNum.toString + "\n")
+      case (key, value) => bw.write(f"${key}%s\t${value}%1.8f\t" + scaleFactor.toString + "\t" + now().toString + "\t" + benchNum.toString + "\t" + nFormat + "\t" + nAPI + "\n")
     }
 
     bw.close()

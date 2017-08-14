@@ -1,9 +1,7 @@
 # Common functions for different TPC-H implementations
 # Based on Hadoop and Hive
 #
-
-#if [[ "$BENCH_SUITE" == *"native-spark"* ]] && [[ ! "$BENCH_SUITE" == *"orc"* ]]; then
-if [[ "$NATIVE_FORMAT" == "text" ]]; then
+if [[ "$NATIVE_FORMAT" == "text" && "$BENCH_SUITE" == "Native-spark" ]]; then
   source_file "$ALOJA_REPO_PATH/shell/common/common_hadoop.sh"
   set_hadoop_requires
 else
@@ -20,12 +18,9 @@ else
   BENCH_DATA_SIZE="$((TPCH_SCALE_FACTOR * 1000000000 ))" #in bytes
 fi   
 
-#[ ! "$TPCH_SCALE_FACTOR" ] &&  TPCH_SCALE_FACTOR=1 #1 GB min size
-#[ ! "$TPCH_USE_LOCAL_FACTOR" ] && TPCH_USE_LOCAL_FACTOR="" #set to a scale factor to use the local DBGEN instead of the M/R version
-
 TPCH_HDFS_DIR="/tmp/tpch-generate"
 
-if [[ ! "$NATIVE_FORMAT" == "text" ]]; then
+if [[ ! "$NATIVE_FORMAT" == "text"  || ! "$BENCH_SUITE" == "Native-spark" ]]; then
   TPCH_DB_NAME="tpch_${BENCH_FILE_FORMAT}_${TPCH_SCALE_FACTOR}"
 fi
 
@@ -49,12 +44,12 @@ benchmark_suite_config() {
   start_hadoop
   
   # Set hive for ORC
-  if [[ ! "$NATIVE_FORMAT" == "text" || "$BENCH_SUITE" == *"D2F-Bench-spark"* ]]; then
+  if [[ ! "$NATIVE_FORMAT" == "text" || "$BENCH_SUITE" =~ "D2F"* ]]; then
     initialize_hive_vars  
     prepare_hive_config "$HIVE_SETTINGS_FILE" "$HIVE_SETTINGS_FILE_PATH"
   fi
   
-  if [[ "$BENCH_SUITE" == *"D2F-Bench-spark"* || "$BENCH_SUITE" =~ "Native-spark"* ]]; then  
+  if [[ "$BENCH_SUITE" =~ *"D2F-Bench-spark"* || "$BENCH_SUITE" =~ "Native-spark"* ]]; then  
     initialize_spark_vars
     prepare_spark_config   
   fi
@@ -221,8 +216,7 @@ tpc-h_datagen() {
     fi    
   
     # Keep files for TPCH on native Spark & no need to load into DB       
-    if [[ ! "$NATIVE_FORMAT" == "text" ]]; then
-         
+    if [[ ! "$NATIVE_FORMAT" == "text" || ! "$BENCH_SUITE" == "Native-spark" ]]; then
       # Load external tables as text
       tpc-h_load-text
 
