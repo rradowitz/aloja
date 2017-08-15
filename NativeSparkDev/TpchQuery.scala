@@ -12,10 +12,10 @@ import scala.collection.mutable.ListBuffer
 /**
  * Parent class for TPC-H queries.
  *
- * Defines schemas for tables and reads pipe ("|") separated text files into these tables.
+ * Main Class for Execution of TPC-H Queries
  *
- * Savvas Savvides <savvas@purdue.edu>
- *
+ * Original Author: Savvas Savvides <savvas@purdue.edu>
+ * Modified by Raphael Radowitz
  */
 abstract class TpchQuery {
 
@@ -43,20 +43,12 @@ object TpchQuery {
       if (outputDir != null || outputDir != "")
         if (outputformat == "orc" || outputformat == "json" || outputformat == "csv" || outputformat == "parquet")
       	  df.write.mode("overwrite").format(outputformat).option("header", "true").save(outputDir + "/" + className + ".out")
-          //df.write.mode("overwrite").format("com.databricks.spark.csv").option("header", "true").save(outputDir + "/" + className) 
-          //df.write.mode("overwrite").json(outputDir + "/" + className + ".out") // json to avoid alias  
   }
 
-  def executeQueries(sc: SparkContext, schemaProvider: TpchSchemaProvider, scaleFactor: Int, benchNum: Int ,queryNum: Int, outputdir: String, outputformat: String, sprint: Int): ListBuffer[(String, Float)] = {
+  def executeQueries(sc: SparkContext, schemaProvider: TpchSchemaProvider, scaleFactor: Int, benchNum: Int ,queryNum: Int, outputdir: String, outputformat: String, sprint: Int): Unit = {
 
-    // if set write results to hdfs, if null write to stdout
-    // val OUTPUT_DIR: String = "/tpch"
-    // val OUTPUT_DIR: String = "file://" + new File(".").getAbsolutePath() + "/dbgen/output"
-    //val OUTPUT_DIR: String = "/native_spark/output/" + benchNum.toString
     val OUTPUT_DIR: String =  outputdir + outputformat + "/" + benchNum.toString
 
-    val results = new ListBuffer[(String, Float)]
-	
     var fromNum = 1
     var toNum = 22
     if (queryNum != 0) {
@@ -65,20 +57,12 @@ object TpchQuery {
     }
 
     for (queryNo <- fromNum to toNum) {
-      val t0 = System.nanoTime()
-
+    
       val query = Class.forName(f"main.scala.Q${queryNo}%02d").newInstance.asInstanceOf[TpchQuery]
 
-      outputDF(query.execute(sc, schemaProvider), OUTPUT_DIR, query.getName(), outputformat, sprint)
-
-      val t1 = System.nanoTime()
-
-      val elapsed = (t1 - t0) / 1000000000.0f // second
-      results += new Tuple2(query.getName(), elapsed)
+      outputDF(query.execute(sc, schemaProvider), OUTPUT_DIR, query.getName(), outputformat, sprint)      
 
     }
-
-    return results
   }
 
   def main(args: Array[String]): Unit = {
@@ -106,27 +90,13 @@ object TpchQuery {
     val conf = new SparkConf().setAppName("TPCH on native Spark")
     val sc = new SparkContext(conf)
 
-    // read files from local FS
-    // val INPUT_DIR = "file://" + new File(".").getAbsolutePath() + "/dbgen"
-
-    // read from hdfs
-    //val INPUT_DIR: String = "/tmp/tpch-generate/" + scaleFactor.toString
-    //val INPUT_DIR: String = "/apps/hive/warehouse/tpch_orc_" + scaleFactor.toString + ".db"
+    // read from hdfs    
     val INPUT_DIR: String = inputdir
 
     val schemaProvider = new TpchSchemaProvider(sc, INPUT_DIR)
+    
+    // Start execution of TPC-H queries
+    executeQueries(sc, schemaProvider, scaleFactor, benchNum, queryNum, outputdir, outputformat, sprint)
 
-    val output = new ListBuffer[(String, Float)]
-    output ++= executeQueries(sc, schemaProvider, scaleFactor, benchNum, queryNum, outputdir, outputformat, sprint)
-
-    val outFile = new File("Native_Spark_TIMES.txt")
-    val bw = new BufferedWriter(new FileWriter(outFile, true))
-
-    output.foreach {
-      //case (key, value) => bw.write(f"${key}%s\t${value}%1.8f\n")
-      case (key, value) => bw.write(f"${key}%s\t${value}%1.8f\t" + scaleFactor.toString + "\t" + now().toString + "\t" + benchNum.toString + "\t" + nFormat + "\t" + nAPI + "\n")
-    }
-
-    bw.close()
   }
 }
