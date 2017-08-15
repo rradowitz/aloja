@@ -7,7 +7,7 @@ source_file "$ALOJA_REPO_PATH/shell/common/common_TPC-H.sh"
 source_file "$ALOJA_REPO_PATH/shell/common/common_spark.sh"
 set_spark_requires
 
-BENCH_LIST="$(seq -f "tpch_query%g" -s " " 21 22)"
+#BENCH_LIST="$(seq -f "tpch_query%g" -s " " 21 22)"
 
 benchmark_suite_run() {
   logger "INFO: Running $BENCH_SUITE"
