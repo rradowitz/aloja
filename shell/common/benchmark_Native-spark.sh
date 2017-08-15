@@ -7,8 +7,8 @@ SPARK_HIVE="spark_hive-2.1.1"
 # Parameter native type text, orc, orc-sql; default: DS
 [ ! "$NATIVE_FORMAT" ] && NATIVE_FORMAT="text"
 
-# Parameter NATIVE FILTER possible values: on, off; default: off -> without predication filter
-[ ! "$NATIVE_FILTER" ] && NATIVE_FILTER="off"
+# Parameter NATIVE FILTER possible values: 0, 1; default: 0 -> without predication filter
+[ ! "$NATIVE_FILTER" ] && NATIVE_FILTER="0"
 
 
 source_file "$ALOJA_REPO_PATH/shell/common/common_TPC-H.sh"
@@ -90,25 +90,17 @@ benchmark_suite_run() {
 # TODO add csv / table / jdbc
 # informat of inputdata [text, orc, json, parquet]
 # outformat of putputdata [text, orc, json, parquet]
+# TODO ADD filter 
+# filter to turon filter pushdown on or off
 execute_tpchquery_spark() {
   local query="$1"
-
-  if [[ "$NATIVE_FILTER" == "off" ]]; then
-    if [[ "$NATIVE_FORMAT" == "text" ]]; then
-      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-final-txt.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FORMAT" "time"
-    elif [[ "$NATIVE_FORMAT" == "orc" || "$NATIVE_FORMAT" == "parquet" || "$NATIVE_FORMAT" == "json" ]]; then
-      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-final.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FORMAT" "time"
-    else
-      logger "WARN: Format not supported for $BENCH_SUITE" 
-    fi 
+  if [[ "$NATIVE_FORMAT" == "text" ]]; then
+    execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-final-txt.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FORMAT" "time"
+  elif [[ "$NATIVE_FORMAT" == "orc" || "$NATIVE_FORMAT" == "parquet" || "$NATIVE_FORMAT" == "json" ]]; then
+    execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-final.jar $SCALE_FACTOR $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FORMAT" "time"
   else
-    if [[ "$NATIVE_FORMAT" == "text" ]]; then
-      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-final-txt-filter.jar $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_FORMAT $NATIVE_OUT_FORMAT $NATIVE_SPRINT" "time"
-    elif [[ "$NATIVE_FORMAT" == "orc" || "$NATIVE_FORMAT" == "parquet" || "$NATIVE_FORMAT" == "json" ]]; then
-      execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-final-filter.jar $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_FORMAT $NATIVE_OUT_FORMAT $NATIVE_SPRINT" "time"
-    else
-      logger "WARN: Format not supported for $BENCH_SUITE" 
-    fi 
+    logger "WARN: Format not supported for $BENCH_SUITE" 
+  fi 
 }
 
 benchmark_suite_cleanup() {

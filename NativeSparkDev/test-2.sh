@@ -1,12 +1,10 @@
 
+[ ! "$SCRIPT"] && SCRIPT=$(readlink -f "$0")
+#[ ! "$ALOJA_DIR" ] && ALOJA_DIR="/home/rradowitz/Documents/aloja" #aloja source dir.
+[ ! "$ALOJA_DIR" ] && ALOJA_DIR=$(dirname "$SCRIPT") #aloja source dir.
 
-teta=$1
 
-if [ $teta == "orc" ]; then
-  echo "GEHT"
-else
-  echo "NEIN"
-fi
+echo $ALOJA_DIR
 
 
 echo "$(seq 15 22)"
