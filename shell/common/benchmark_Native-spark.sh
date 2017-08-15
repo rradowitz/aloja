@@ -4,7 +4,7 @@
 SPARK_VERSION="spark-2.1.1"
 SPARK_HIVE="spark_hive-2.1.1"
 
-# Parameter native type text, orc, orc-sql; default: DS
+# Parameter native type text, orc, parquet, json; default: text
 [ ! "$NATIVE_FORMAT" ] && NATIVE_FORMAT="text"
 
 # Parameter NATIVE FILTER possible values: 0, 1; default: 0 -> without predication filter

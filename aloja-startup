@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Script to startup aloja and excute basic commands in an atomated manner
 # Goethe University Frankfurt
 # Big Data Lab
@@ -6,21 +6,21 @@
 # Date of creation: Mai 2017
 
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
-echo "============================ Aloja-start up script ============================"
+echo "============================ ALOJA-startup script ============================="
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 echo ""
 echo ""
 echo ""
 
 # Ititialization
-[ ! "$SCRIPT"] && SCRIPT=$(readlink -f "$0")
+[ ! "$SCRIPT"] && SCRIPT=$(readlink -f "$0") # retrieve script path
 #[ ! "$ALOJA_DIR" ] && ALOJA_DIR="/home/rradowitz/Documents/aloja" #aloja source dir.
-[ ! "$ALOJA_DIR" ] && ALOJA_DIR=$(dirname "$SCRIPT") #aloja source dir.
-[ ! "$BENCH_PATH" ] && BENCH_PATH="/vagrant/aloja-bench" #path to run_bench file on VM
+[ ! "$ALOJA_DIR" ] && ALOJA_DIR=$(dirname "$SCRIPT") # aloja source dir.
+[ ! "$BENCH_PATH" ] && BENCH_PATH="/vagrant/aloja-bench" # path to run_bench file on VM
 
 
-mainmenu () {
-  echo "================================================="
+mainmenu() {
+  echo "==========================================================="
   echo "Press 1 - Start Aloja & Run a Benchmark"
   echo "Press 2 - Check Vagrant Global Status"
   echo "Press 3 - Vagrant Destroy"
@@ -31,13 +31,13 @@ mainmenu () {
   echo "Press 8 - Results"
   echo "Press 9 - RESTART"
   echo "Press x - EXIT"
-  echo "================================================="
+  echo "==========================================================="
   echo ""
   read -p "Input Selection: " mainmenuinput
-  echo "_________________________________________________"
+  echo "___________________________________________________________"
   
   #Navigte to the aloja directory
-  cd "$ALOJA_DIR"  
+  cd "$ALOJA_DIR"
 
   if [ "$mainmenuinput" = "1" ]; then
             alojastartup
@@ -65,7 +65,15 @@ mainmenu () {
         elif [ "$mainmenuinput" = "7" ]; then
             connectmysql                
         elif [ "$mainmenuinput" = "8" ]; then
- 	    getResults
+            getResults
+            echo ""
+            echo "" 
+            echo "==========================================================="
+            echo "Results are generated and saved in your home directory"
+            echo "--> $file"
+            echo "==========================================================="
+            echo ""
+            mainmenu
         elif [ "$mainmenuinput" = "9" ]; then
             vagrant destroy -f               
             alojastartup
@@ -81,8 +89,8 @@ mainmenu () {
 }
 
 # Aloja startup
-alojastartup () {
-  echo "================================================="
+alojastartup() {
+  echo "==========================================================="
   echo "Bringing up aloja-web & vagrant-99-00 & vagrant-99-01"
   echo ""
   vagrant up
@@ -92,11 +100,11 @@ alojastartup () {
   vagrant up vagrant-99-00 vagrant-99-01 
   echo ""
   echo Connecting to vagrant-99-00
-  echo "================================================="
+  echo "==========================================================="
 }
 
 # Run benchmarks
-runbench () {
+runbench() {
   echo ""
   echo "Press 1 to run Native Spark"
   echo "Press 2 to run D2F-Bench-spark"
@@ -156,29 +164,15 @@ connectmysql() {
 }
 
 getResults(){
-  file=/home/rradowitz/$(date +"%Y%m%d%H%M")-Local-Results.txt
-
-  echo -e "JOB \t HDD \t SCALE_FACTOR \t QUERY \t TIME \t STATUS \t NATIVE_FORMAT \t NATIVE_API \t NATIVE_SPRINT \t  NATIVE_OUTPUT_DIR \t CACHED \t ENGINE \t SMV \n" > $file
-
-  for run in /home/rradowitz/Documents/aloja/blobs/jobs_*/2017*; 
- 	do declare -A EXEC_TIME 
-        && eval $(grep "EXEC_TIME" $run/config.sh)
-        && declare -A EXEC_STATUS 
-        && eval $(grep "EXEC_STATUS" $run/config.sh) 
-        && declare -A NATIVE_FORMAT 
-        && eval $(grep "NATIVE_FORMAT" $run/config.sh) 
-        && for bench in ${!EXEC_TIME[@]}; 
-		do config= ${run##*_ETH_}; scale=${config##*_S}; 
-                echo -e "${run##*/}\t${config%%_*}\t${scale%%_*}\t$bench\t${EXEC_TIME[$bench]}\t"${EXEC_STATUS[$bench]}"\t${NATIVE_FORMAT}\t${NATIVE_SPRINT}\t${NATIVE_OUTPUT_DIR}\t$(grep -q "drop_cache" $run/config.sh && echo drop || echo cached)\t$(grep "^ENGINE=" $run/config.sh|cut -d= -f2)\t$(grep "Spark=" $run/config.sh|cut -d= -f2)\tSMV$(grep "SPARK_MAJOR_VERSION=" $run/config.sh|cut -d= -f2)"; done 
-       && unset EXEC_TIME EXEC_STATUS; 
-       done | grep -v validate | sort >> $file  
+  # create file to save results in home directory
+  file=~/$(date +"%Y%m%d%H%M")-Local-Results.txt
+  
+  # set header
+  echo -e "JOB \tSCALE_FACTOR \tQUERY \tTIME \tSTATUS \tNATIVE_FORMAT \n" > $file
+  
+  # append the results to created file 
+for run in ${ALOJA_DIR}/blobs/jobs_*/2017*; do declare -A EXEC_TIME && eval $(grep "EXEC_TIME" $run/config.sh) && declare -A EXEC_STATUS && eval $(grep "EXEC_STATUS" $run/config.sh) && declare -A NATIVE_FORMAT && eval $(grep "NATIVE_FORMAT" $run/config.sh) && for bench in ${!EXEC_TIME[@]}; do config=${run##*_ETH_}; scale=${config##*_S}; echo -e "${run##*/}\t${scale%%_*}\t$bench\t${EXEC_TIME[$bench]}\t"${EXEC_STATUS[$bench]}"\t${NATIVE_FORMAT}"; done && unset EXEC_TIME EXEC_STATUS; done | grep -v validate | sort >> $file
 }
 
 mainmenu
-
-
-
-
-
-
 

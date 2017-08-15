@@ -3,6 +3,10 @@
 #[ ! "$ALOJA_DIR" ] && ALOJA_DIR="/home/rradowitz/Documents/aloja" #aloja source dir.
 [ ! "$ALOJA_DIR" ] && ALOJA_DIR=$(dirname "$SCRIPT") #aloja source dir.
 
+file=~/$(date +"%Y%m%d%H%M")-Local-Results.txt
+echo "Results are generated and saved in your home directory"
+echo "$file"
+
 
 echo $ALOJA_DIR
 
