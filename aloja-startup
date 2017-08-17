@@ -3,7 +3,8 @@
 # Goethe University Frankfurt
 # Big Data Lab
 # Author: Raphael Radowitz
-# Date of creation: Mai 2017
+# Copyright (c) 2017 
+# Version 2.1
 
 echo "=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 echo "============================ ALOJA-startup script ============================="
@@ -14,7 +15,6 @@ echo ""
 
 # Ititialization
 [ ! "$SCRIPT"] && SCRIPT=$(readlink -f "$0") # retrieve script path
-#[ ! "$ALOJA_DIR" ] && ALOJA_DIR="/home/rradowitz/Documents/aloja" #aloja source dir.
 [ ! "$ALOJA_DIR" ] && ALOJA_DIR=$(dirname "$SCRIPT") # aloja source dir.
 [ ! "$BENCH_PATH" ] && BENCH_PATH="/vagrant/aloja-bench" # path to run_bench file on VM
 
@@ -171,7 +171,22 @@ getResults(){
   echo -e "JOB \tSCALE_FACTOR \tQUERY \tTIME \tSTATUS \tNATIVE_FORMAT \n" > $file
   
   # append the results to created file 
-for run in ${ALOJA_DIR}/blobs/jobs_*/2017*; do declare -A EXEC_TIME && eval $(grep "EXEC_TIME" $run/config.sh) && declare -A EXEC_STATUS && eval $(grep "EXEC_STATUS" $run/config.sh) && declare -A NATIVE_FORMAT && eval $(grep "NATIVE_FORMAT" $run/config.sh) && for bench in ${!EXEC_TIME[@]}; do config=${run##*_ETH_}; scale=${config##*_S}; echo -e "${run##*/}\t${scale%%_*}\t$bench\t${EXEC_TIME[$bench]}\t"${EXEC_STATUS[$bench]}"\t${NATIVE_FORMAT}"; done && unset EXEC_TIME EXEC_STATUS; done | grep -v validate | sort >> $file
+  for run in ${ALOJA_DIR}/blobs/jobs_*/2017*;
+  do 
+    declare -A EXEC_TIME && 
+    eval $(grep "EXEC_TIME" $run/config.sh) && 
+    declare -A EXEC_STATUS && 
+    eval $(grep "EXEC_STATUS" $run/config.sh) && 
+    declare -A  NATIVE_FORMAT && 
+    eval $(grep "NATIVE_FORMAT" $run/config.sh) && 
+    for bench in ${!EXEC_TIME[@]}; 
+    do 
+      config=${run##*_ETH_}; 
+      scale=${config##*_S}; 
+      echo -e "${run##*/}\t${scale%%_*}\t$bench\t${EXEC_TIME[$bench]}\t"${EXEC_STATUS[$bench]}"\t${NATIVE_FORMAT}"; 
+    done && 
+    unset EXEC_TIME EXEC_STATUS; 
+  done | grep -v validate | sort >> $file
 }
 
 mainmenu

@@ -22,7 +22,9 @@ for run in /home/rradowitz/Documents/aloja/blobs/jobs_*/2017*; do declare -A EXE
 
 
 
+file=/home/rradowitz/$(date +"%Y%m%d%H%M")-Local-Results.txt
 
+echo -e "JOB \tSCALE_FACTOR \tQUERY \tTIME \tSTATUS \tNATIVE_FORMAT \n" > $file
 
 
 
