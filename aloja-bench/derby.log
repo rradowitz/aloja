@@ -1,7 +1,7 @@
 ----------------------------------------------------------------
-Thu Aug 10 16:43:22 UTC 2017:
-Booting Derby version The Apache Software Foundation - Apache Derby - 10.12.1.1 - (1704137): instance a816c00e-015d-cd07-6ca2-000014c6c160 
-on database directory /scratch/local/aloja-bench_3/aplic/bigbench_metastore_db with class loader org.apache.spark.sql.hive.client.IsolatedClientLoader$$anon$1@612290d 
+Sat Aug 19 17:54:00 UTC 2017:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.12.1.1 - (1704137): instance a816c00e-015d-fba1-513c-00000fbe6010 
+on database directory /scratch/local/aloja-bench_3/aplic/bigbench_metastore_db with class loader org.apache.spark.sql.hive.client.IsolatedClientLoader$$anon$1@f1d1463 
 Loaded from file:/scratch/local/aplic2/apps/spark_hive-2.1.1/jars/derby-10.12.1.1.jar
 java.vendor=Oracle Corporation
 java.runtime.version=1.8.0_101-b13

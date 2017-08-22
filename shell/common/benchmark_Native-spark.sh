@@ -40,10 +40,12 @@ if [[ "$NATIVE_FORMAT" == "text" ]]; then
 elif [[ "$NATIVE_FORMAT" == "orc" ]]; then
   NATIVE_INPUT_DIR="/apps/hive/warehouse/tpch_orc_${SCALE_FACTOR}.db"
   logger "INFO: Setting INPUT_DIR to $NATIVE_INPUT_DIR"
+elif [[ "$NATIVE_FORMAT" == "tbl" ]]; then
+  NATIVE_DB="tpch_orc_${SCALE_FACTOR}"
+  logger "INFO: Setting INPUT_DIR to read from HIVE table"
 else
   logger "WARN: NO INPUT_DIR SET"
 fi  
-
 
 # Set output base dir; a subdirectory for each BENCH_CURRENT_NUM_RUN is created
 # Info: do not miss last "/"
@@ -98,7 +100,12 @@ execute_tpchquery_spark() {
   if [[ "$NATIVE_FORMAT" == "text" ]]; then
     execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-final-txt-filter-option.jar $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_FORMAT $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FILTER" "time"
   elif [[ "$NATIVE_FORMAT" == "orc" || "$NATIVE_FORMAT" == "parquet" || "$NATIVE_FORMAT" == "json" ]]; then
-    execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-final-filter-option.jar $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_FORMAT $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FILTER" "time"
+#    execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-final-filter-option.jar $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_FORMAT $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FILTER" "time"
+  NATIVE_YARN="ON"
+    execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-yarn.jar $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_FORMAT $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FILTER" "time"
+
+  elif [[ "$NATIVE_FORMAT" == "tbl" ]]; then
+  execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-table.jar $BENCH_CURRENT_NUM_RUN $query $NATIVE_OUTPUT_DIR $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FILTER $NATIVE_DB" "time"
   else
     logger "WARN: Format not supported for $BENCH_SUITE" 
   fi 

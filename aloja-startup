@@ -23,7 +23,7 @@ mainmenu() {
   echo "==========================================================="
   echo "Press 1 - Start Aloja & Run a Benchmark"
   echo "Press 2 - Check Vagrant Global Status"
-  echo "Press 3 - Vagrant Destroy"
+  echo "Press 3 - Stop Aloja"
   echo "Press 4 - Run Benchmark"
   echo "Press 5 - Connect to Vagrant-99-00"
   echo "Press 6 - Connect to Vagrant-99-01"
@@ -168,7 +168,7 @@ getResults(){
   file=~/$(date +"%Y%m%d%H%M")-Local-Results.txt
   
   # set header
-  echo -e "JOB \tSCALE_FACTOR \tQUERY \tTIME \tSTATUS \tNATIVE_FORMAT \n" > $file
+  echo -e "JOB \tSCALE_FACTOR \tQUERY \tTIME \tSTATUS \tNATIVE_FORMAT \tNATIVE_FILTER \n" > $file
   
   # append the results to created file 
   for run in ${ALOJA_DIR}/blobs/jobs_*/2017*;
@@ -178,12 +178,14 @@ getResults(){
     declare -A EXEC_STATUS && 
     eval $(grep "EXEC_STATUS" $run/config.sh) && 
     declare -A  NATIVE_FORMAT && 
-    eval $(grep "NATIVE_FORMAT" $run/config.sh) && 
+    eval $(grep "NATIVE_FORMAT" $run/config.sh) &&
+    declare -A  NATIVE_FILTER && 
+    eval $(grep "NATIVE_FILTER" $run/config.sh) &&  
     for bench in ${!EXEC_TIME[@]}; 
     do 
       config=${run##*_ETH_}; 
       scale=${config##*_S}; 
-      echo -e "${run##*/}\t${scale%%_*}\t$bench\t${EXEC_TIME[$bench]}\t"${EXEC_STATUS[$bench]}"\t${NATIVE_FORMAT}"; 
+      echo -e "${run##*/}\t${scale%%_*}\t$bench\t${EXEC_TIME[$bench]}\t"${EXEC_STATUS[$bench]}"\t${NATIVE_FORMAT}\t${NATIVE_FILTER}"; 
     done && 
     unset EXEC_TIME EXEC_STATUS; 
   done | grep -v validate | sort >> $file

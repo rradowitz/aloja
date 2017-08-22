@@ -1,9 +1,21 @@
+vmRAM=3096
+OS_RESERVED_MEM_MB=256
+
+#vmRAM=$1.to_s.strip.gsub(/^['"]|['"]$/, '').to_i * 1024
+
+
+
+[ ! "$PHYS_MEM" ] && PHYS_MEM="$(printf %.$2f $(echo "($vmRAM*1024)-$OS_RESERVED_MEM_MB" | bc))"
+
+echo "PHYS_MEM: $PHYS_MEM"
+
+
 
 [ ! "$SCRIPT"] && SCRIPT=$(readlink -f "$0")
 #[ ! "$ALOJA_DIR" ] && ALOJA_DIR="/home/rradowitz/Documents/aloja" #aloja source dir.
 [ ! "$ALOJA_DIR" ] && ALOJA_DIR=$(dirname "$SCRIPT") #aloja source dir.
 
-file=~/$(date +"%Y%m%d%H%M")-Local-Results.txt
+
 echo "Results are generated and saved in your home directory"
 echo "$file"
 
