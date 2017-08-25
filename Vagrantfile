@@ -25,8 +25,8 @@ IO.foreach(node_config) do |line|
 end
 
 # env overrides
-vm_mem = 2560
-#vm_mem = 1024
+vm_mem = 2048
+#vm_mem = 2560
 if ENV['WMEM']
   vm_mem = ENV['WMEM']
 end
@@ -40,10 +40,8 @@ end
 
 # defaults for cluster
 numberOfNodes = 1   # starts at 0, really means 2
-#vmRAM = 6192	
-#vmRAM = 3096
-vmRAM = 10240
-vmCPUS = 3
+vmRAM = 6192
+vmCPUS = 2
 
 # extract relevant values from config files
 cluster_config = "shell/conf/cluster_vagrant-99.conf"
@@ -182,10 +180,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         v.name = "vagrant-99-" + num.to_s.rjust(2, '0')
         v.memory = vmRAM #change as needed
         v.cpus = vmCPUS  #change as needed
-        #v.memory = 4608
-        #v.cpus = 3
-	#v.memory = 4096 
-        #v.cpus = 2
         # Force to use hosts DNS
         v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       end

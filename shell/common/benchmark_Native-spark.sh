@@ -10,12 +10,11 @@ SPARK_HIVE="spark_hive-2.1.1"
 # Parameter NATIVE FILTER possible values: 0, 1; default: 0 -> without predication filter
 [ ! "$NATIVE_FILTER" ] && NATIVE_FILTER="0"
 
-
 source_file "$ALOJA_REPO_PATH/shell/common/common_TPC-H.sh"
 source_file "$ALOJA_REPO_PATH/shell/common/common_spark.sh"
 set_spark_requires
 
-# Setting bench list - queries 1 to 22
+# Setting bench list - queries 1 to 22 - override 
 BENCH_LIST="$(seq 22)"
 
 # Set Bench name
@@ -84,28 +83,26 @@ benchmark_suite_run() {
 }
 
 # $1 query number
-# jar is expecting 7 args [BenchNum, query, inputdir, outputdir, intputformat, outputformat, screenprint]
+# jar is expecting 8 args [BenchNum, query, inputdir, outputdir, intputformat, outputformat, screenprint, filter]
 # BenchNum for data output_dir
 # query for TPCH query
 # inputdir for the data input
 # outputdir for data output
-# TODO add csv / table / jdbc
+# TODO add csv / jdbc
 # informat of inputdata [text, orc, json, parquet]
 # outformat of putputdata [text, orc, json, parquet]
 # TODO ADD filter 
 # filter to turon filter pushdown on or off
+# Hive/tbl version expects 7 args [BenchNum, query, outputdir, outputformat, screenprint, filter, DB]
 execute_tpchquery_spark() {
   local query="$1"
 
   if [[ "$NATIVE_FORMAT" == "text" ]]; then
-    execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-final-txt-filter-option.jar $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_FORMAT $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FILTER" "time"
+    execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-txt.jar $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_FORMAT $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FILTER" "time"
   elif [[ "$NATIVE_FORMAT" == "orc" || "$NATIVE_FORMAT" == "parquet" || "$NATIVE_FORMAT" == "json" ]]; then
-#    execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-final-filter-option.jar $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_FORMAT $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FILTER" "time"
-  NATIVE_YARN="ON"
-    execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-yarn.jar $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_FORMAT $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FILTER" "time"
-
+    execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-orc.jar $BENCH_CURRENT_NUM_RUN $query $NATIVE_INPUT_DIR $NATIVE_OUTPUT_DIR $NATIVE_FORMAT $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FILTER" "time"
   elif [[ "$NATIVE_FORMAT" == "tbl" ]]; then
-  execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-table.jar $BENCH_CURRENT_NUM_RUN $query $NATIVE_OUTPUT_DIR $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FILTER $NATIVE_DB" "time"
+  execute_spark "tpch_query_$query" "--class main.scala.TpchQuery $NATIVE_SPARK_LOCAL_DIR/spark-tpc-h-queries_2.11-1.0-tbl.jar $BENCH_CURRENT_NUM_RUN $query $NATIVE_OUTPUT_DIR $NATIVE_OUT_FORMAT $NATIVE_SPRINT $NATIVE_FILTER $NATIVE_DB" "time"
   else
     logger "WARN: Format not supported for $BENCH_SUITE" 
   fi 
