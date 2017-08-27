@@ -21,7 +21,7 @@ echo ""
 
 mainmenu() {
   echo "==========================================================="
-  echo "Press 1 - Start Aloja & Run a Benchmark"
+  echo "Press 1 - Start Aloja"
   echo "Press 2 - Check Vagrant Global Status"
   echo "Press 3 - Stop Aloja"
   echo "Press 4 - Run Benchmark"

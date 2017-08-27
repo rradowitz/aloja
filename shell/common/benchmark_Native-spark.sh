@@ -17,6 +17,7 @@ set_spark_requires
 # Setting bench list - queries 1 to 22 - override 
 BENCH_LIST="$(seq 22)"
 
+
 # Set Bench name
 BENCH_NAME="TPCH-on-Native_Spark"
 NATIVE_SPARK_FOLDER_NAME="native_spark-master"
