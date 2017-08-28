@@ -40,6 +40,9 @@ if [[ "$NATIVE_FORMAT" == "text" ]]; then
 elif [[ "$NATIVE_FORMAT" == "orc" ]]; then
   NATIVE_INPUT_DIR="/apps/hive/warehouse/tpch_orc_${SCALE_FACTOR}.db"
   logger "INFO: Setting INPUT_DIR to $NATIVE_INPUT_DIR"
+elif [[ "$NATIVE_FORMAT" == "parquet"]]; then
+  NATIVE_INPUT_DIR="/apps/hive/warehouse/tpch_parquet_${SCALE_FACTOR}.db"
+  logger "INFO: Setting INPUT_DIR to $NATIVE_INPUT_DIR"
 elif [[ "$NATIVE_FORMAT" == "tbl" ]]; then
   NATIVE_DB="tpch_orc_${SCALE_FACTOR}"
   logger "INFO: Setting INPUT_DIR to read from HIVE table"
