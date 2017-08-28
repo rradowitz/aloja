@@ -113,10 +113,11 @@ runbench() {
   echo "Press x to return to mainmenu"
   echo ""
   read -p "Select Benchmark: " benchinput
+  setBenchScaleFactor
   if [ "$benchinput" = "1" ]; then
-            setBenchScaleFactor
-  	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH; 
-	    TPCH_SCALE_FACTOR=$scaleFactor $BENCH_PATH/run_benchs.sh -b Native_spark && exec \$SHELL"
+            setNativeParam
+    	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH; 
+	    TPCH_SCALE_FACTOR=$scaleFactor NATIVE_FORMAT=$informat NATIVE_FILTER=$filter NATIVE_SPRINT=$sprint NATIVE_OUT_FORMAT=$outformat $BENCH_PATH/run_benchs.sh -b Native_spark && exec \$SHELL"
 	    mainmenu
         elif [ "$benchinput" = "2" ]; then
 	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH; 
@@ -141,8 +142,73 @@ runbench() {
 
 setBenchScaleFactor() {
   scaleFactor=1
-  echo "Please choose scale factor: 1,2,3 ... 100, ...,1000"
-  read -p "Select Benchmark: " scaleFactor 
+  echo "Choose scale factor: 1,2,3 ... 100, ...,1000"
+  read -p "Select scale factor: " scaleFactor
+}
+
+
+setNativeParam(){
+  echo "Input Format"
+  echo "Press 1 : text"
+  echo "Press 2 : orc"
+  echo "Press 3 : parquet"
+  echo "Press 4 : Hive Table"
+  read -p "Select input format: " input1 
+  if [ "$input1" = "1" ]; then
+      informat="text"   
+    elif [ "$input1" = "2" ]; then
+      informat="orc"
+    elif [ "$input1" = "3" ]; then
+      informat="parquet"
+    elif [ "$input1" = "4" ]; then
+      informat="tbl"
+    else
+      "not supported input"
+       clear
+       mainmenu
+  fi
+
+  echo "Turn Predicate Filter on or off"
+  echo "Press 0 : off"
+  echo "Press 1 : on"
+  read -p "Select filter on or off: " filter
+
+  if [ "$filter" = "0" || "$filter" = "1" ]; then
+    echo "filter was set to: $filter"
+  else 
+     "not supported input"
+       clear
+       mainmenu 
+  fi
+
+  echo "Turn print to screen on or off"
+  echo "Press 0 : off"
+  echo "Press 1 : on"
+  read -p "Select Filter on or off: " sprint
+
+  if [ "$sprint" = "0" ]; then
+    echo "Choose output format"
+    echo "Press 1 : json"
+    echo "Press 2 : orc"
+    echo "Press 3 : parquet"
+    echo "Press 4 : text"
+    read -p "Select output format: " input2
+  
+    if [ "$input2" = "1" ]; then
+        outformat="json"   
+      elif [ "$input2" = "2" ]; then
+        outformat="orc"
+      elif [ "$input2" = "3" ]; then
+        outformat="parquet"
+      elif [ "$input2" = "4" ]; then
+        outformat="text"
+      else
+        "not supported input"
+         clear
+         mainmenu
+    fi
+  fi
+  
 }
 
 # Open Terminal to vagrant-99-00
