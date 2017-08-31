@@ -17,7 +17,6 @@ set_spark_requires
 # Setting bench list - queries 1 to 22 - override 
 BENCH_LIST="$(seq 22)"
 
-
 # Set Bench name
 BENCH_NAME="TPCH-on-Native_Spark"
 NATIVE_SPARK_FOLDER_NAME="native_spark-master"
@@ -35,16 +34,16 @@ if [ "$TPCH_USE_LOCAL_FACTOR" > 0 ] ; then
 fi
 
 if [[ "$NATIVE_FORMAT" == "text" ]]; then
-  NATIVE_INPUT_DIR="/tmp/tpch-generate/$SCALE_FACTOR"
+  [ ! "$NATIVE_INPUT_DIR" ] && NATIVE_INPUT_DIR="/tmp/tpch-generate/$SCALE_FACTOR"
   logger "INFO: Setting INPUT_DIR to $NATIVE_INPUT_DIR"
 elif [[ "$NATIVE_FORMAT" == "orc" ]]; then
-  NATIVE_INPUT_DIR="/apps/hive/warehouse/tpch_orc_${SCALE_FACTOR}.db"
+  [ ! "$NATIVE_INPUT_DIR" ] &&  NATIVE_INPUT_DIR="/apps/hive/warehouse/tpch_orc_${SCALE_FACTOR}.db"
   logger "INFO: Setting INPUT_DIR to $NATIVE_INPUT_DIR"
-elif [[ "$NATIVE_FORMAT" == "parquet"]]; then
-  NATIVE_INPUT_DIR="/apps/hive/warehouse/tpch_parquet_${SCALE_FACTOR}.db"
+elif [[ "$NATIVE_FORMAT" == "parquet" ]]; then
+  [ ! "$NATIVE_INPUT_DIR" ] &&  NATIVE_INPUT_DIR="/apps/hive/warehouse/tpch_parquet_${SCALE_FACTOR}.db"
   logger "INFO: Setting INPUT_DIR to $NATIVE_INPUT_DIR"
 elif [[ "$NATIVE_FORMAT" == "tbl" ]]; then
-  NATIVE_DB="tpch_orc_${SCALE_FACTOR}"
+  [ ! "$NATIVE_DB" ] && NATIVE_DB="tpch_orc_${SCALE_FACTOR}"
   logger "INFO: Setting INPUT_DIR to read from HIVE table"
 else
   logger "WARN: NO INPUT_DIR SET"

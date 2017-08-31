@@ -117,7 +117,7 @@ runbench() {
   if [ "$benchinput" = "1" ]; then
             setNativeParam
     	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH; 
-	    TPCH_SCALE_FACTOR=$scaleFactor NATIVE_FORMAT=$informat NATIVE_FILTER=$filter NATIVE_SPRINT=$sprint NATIVE_OUT_FORMAT=$outformat $BENCH_PATH/run_benchs.sh -b Native_spark && exec \$SHELL"
+	    TPCH_SCALE_FACTOR=$scaleFactor NATIVE_FORMAT=$informat NATIVE_FILTER=$filter NATIVE_SPRINT=$sprint NATIVE_OUT_FORMAT=$outformat $BENCH_PATH/run_benchs.sh -b Native-spark && exec \$SHELL"
 	    mainmenu
         elif [ "$benchinput" = "2" ]; then
 	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH; 
@@ -141,13 +141,14 @@ runbench() {
 }
 
 setBenchScaleFactor() {
-  scaleFactor=1
+  #scaleFactor=1
   echo "Choose scale factor: 1,2,3 ... 100, ...,1000"
   read -p "Select scale factor: " scaleFactor
 }
 
 
 setNativeParam(){
+  outformat="off" 
   echo "Input Format"
   echo "Press 1 : text"
   echo "Press 2 : orc"
@@ -173,14 +174,6 @@ setNativeParam(){
   echo "Press 1 : on"
   read -p "Select filter on or off: " filter
 
-  if [ "$filter" = "0" || "$filter" = "1" ]; then
-    echo "filter was set to: $filter"
-  else 
-     "not supported input"
-       clear
-       mainmenu 
-  fi
-
   echo "Turn print to screen on or off"
   echo "Press 0 : off"
   echo "Press 1 : on"
@@ -195,7 +188,7 @@ setNativeParam(){
     read -p "Select output format: " input2
   
     if [ "$input2" = "1" ]; then
-        outformat="json"   
+        outformat="json"
       elif [ "$input2" = "2" ]; then
         outformat="orc"
       elif [ "$input2" = "3" ]; then
@@ -234,7 +227,7 @@ getResults(){
   file=~/$(date +"%Y%m%d%H%M")-Local-Results.txt
   
   # set header
-  echo -e "JOB \tSCALE_FACTOR \tQUERY \tTIME \tSTATUS \tNATIVE_FORMAT \tNATIVE_FILTER \n" > $file
+  echo -e "JOB \tSCALE_FACTOR \tQUERY \tTIME \tSTATUS \tBENCH_SUITE \tNATIVE_FORMAT \tNATIVE_FILTER \tSCREEN PRINT \n" > $file
   
   # append the results to created file 
   for run in ${ALOJA_DIR}/blobs/jobs_*/2017*;
@@ -243,15 +236,19 @@ getResults(){
     eval $(grep "EXEC_TIME" $run/config.sh) && 
     declare -A EXEC_STATUS && 
     eval $(grep "EXEC_STATUS" $run/config.sh) && 
+    declare -A BENCH_SUITE && 
+    eval $(grep "BENCH_SUITE" $run/config.sh) && 
     declare -A  NATIVE_FORMAT && 
     eval $(grep "NATIVE_FORMAT" $run/config.sh) &&
     declare -A  NATIVE_FILTER && 
-    eval $(grep "NATIVE_FILTER" $run/config.sh) &&  
+    eval $(grep "NATIVE_FILTER" $run/config.sh) &&
+    declare -A  NATIVE_SPRINT && 
+    eval $(grep "NATIVE_SPRINT" $run/config.sh) &&    
     for bench in ${!EXEC_TIME[@]}; 
     do 
       config=${run##*_ETH_}; 
       scale=${config##*_S}; 
-      echo -e "${run##*/}\t${scale%%_*}\t$bench\t${EXEC_TIME[$bench]}\t"${EXEC_STATUS[$bench]}"\t${NATIVE_FORMAT}\t${NATIVE_FILTER}"; 
+      echo -e "${run##*/}\t${scale%%_*}\t$bench\t${EXEC_TIME[$bench]}\t${EXEC_STATUS[$bench]}\t${BENCH_SUITE}\t${NATIVE_FORMAT}\t${NATIVE_FILTER}\t${NATIVE_SPRINT}"; 
     done && 
     unset EXEC_TIME EXEC_STATUS; 
   done | grep -v validate | sort >> $file
