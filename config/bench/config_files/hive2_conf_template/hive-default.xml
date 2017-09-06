@@ -1548,6 +1548,11 @@
     <description>Current Hive implementation of parquet stores timestamps to UTC, this flag allows skipping of the conversionon reading parquet files from other tools</description>
   </property>
   <property>
+    <name>parquet.compression</name>
+    <value>ZLIB</value>
+    <description>The valid options for compression are: UNCOMPRESSED, GZIP, SNAPPY</description>
+  </property>
+  <property>
     <name>hive.int.timestamp.conversion.in.seconds</name>
     <value>false</value>
     <description>

@@ -28,7 +28,7 @@ fi
 
 # Validations
 [ "$(get_hadoop_major_version)" != "2" ] && die "Hadoop v2 is required for $BENCH_SUITE"
-[ "$BENCH_FILE_FORMAT" != "orc" ] && die "Only orc file format is supported for now, got: $BENCH_FILE_FORMAT"
+[[ "$BENCH_FILE_FORMAT" != "orc" && "$BENCH_FILE_FORMAT" != "parquet" ]] && die "Only orc & parquet file format is supported for now, got: $BENCH_FILE_FORMAT"
 
 # TODO: temporary patch for missing gcc on azure ubuntu
 [ ! "$(which gcc)" ] && sudo apt-get install -y -q gcc make

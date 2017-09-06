@@ -116,12 +116,26 @@ runbench() {
   setBenchScaleFactor
   if [ "$benchinput" = "1" ]; then
             setNativeParam
-    	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH; 
-	    TPCH_SCALE_FACTOR=$scaleFactor NATIVE_FORMAT=$informat NATIVE_FILTER=$filter NATIVE_SPRINT=$sprint NATIVE_OUT_FORMAT=$outformat $BENCH_PATH/run_benchs.sh -b Native-spark && exec \$SHELL"
+            if [ "$informat" == "tbl" ]; then
+              gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH; 
+	      BENCH_FILE_FORMAT=$bench_format TPCH_SCALE_FACTOR=$scaleFactor NATIVE_FORMAT=$informat NATIVE_FILTER=$filter NATIVE_SPRINT=$sprint NATIVE_OUT_FORMAT=$outformat $BENCH_PATH/run_benchs.sh -b Native-spark && exec \$SHELL"
+            else
+    	      gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH; 
+	      TPCH_SCALE_FACTOR=$scaleFactor NATIVE_FORMAT=$informat NATIVE_FILTER=$filter NATIVE_SPRINT=$sprint NATIVE_OUT_FORMAT=$outformat $BENCH_PATH/run_benchs.sh -b Native-spark && exec \$SHELL"
+            fi 
 	    mainmenu
         elif [ "$benchinput" = "2" ]; then
-	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH; 
-	    TPCH_SCALE_FACTOR=$scaleFactor $BENCH_PATH/run_benchs.sh -b D2F-Bench-spark && exec \$SHELL"
+            echo "Set Format"
+            echo "Press 1 : orc"
+            echo "Press 2 : parquet"          
+            read -p "Select format: " inputformat 
+            if [ "$inputformat" = "1" ]; then
+              bench_format="orc"
+            elif [ "$inputformat" = "2" ]; then
+              bench_format="parquet"
+            fi
+  	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH; 
+	    BENCH_FILE_FORMAT=$bench_format TPCH_SCALE_FACTOR=$scaleFactor $BENCH_PATH/run_benchs.sh -b D2F-Bench-spark && exec \$SHELL"
 	    mainmenu
 	elif [ "$benchinput" = "3" ]; then
 	    gnome-terminal -x vagrant ssh vagrant-99-00 -- -t "cd $BENCH_PATH;
@@ -163,6 +177,15 @@ setNativeParam(){
       informat="parquet"
     elif [ "$input1" = "4" ]; then
       informat="tbl"
+      echo "Format"
+      echo "Press 1 : orc"
+      echo "Press 2 : parquet"          
+      read -p "Select format: " inputformat 
+      if [ "$inputformat" = "1" ]; then
+        bench_format="orc"
+      elif [ "$inputformat" = "2" ]; then
+        bench_format="parquet"
+      fi
     else
       "not supported input"
        clear
