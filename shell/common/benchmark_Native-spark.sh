@@ -15,7 +15,7 @@ source_file "$ALOJA_REPO_PATH/shell/common/common_spark.sh"
 set_spark_requires
 
 # Setting bench list - queries 1 to 22 - override 
-BENCH_LIST="$(seq 22)"
+#BENCH_LIST="$(seq 20 22)"
 
 # Set Bench name
 BENCH_NAME="TPCH-on-Native_Spark"
@@ -43,7 +43,7 @@ elif [[ "$NATIVE_FORMAT" == "parquet" ]]; then
   [ ! "$NATIVE_INPUT_DIR" ] &&  NATIVE_INPUT_DIR="/apps/hive/warehouse/tpch_parquet_${SCALE_FACTOR}.db"
   logger "INFO: Setting INPUT_DIR to $NATIVE_INPUT_DIR"
 elif [[ "$NATIVE_FORMAT" == "tbl" ]]; then
-  [ ! "$NATIVE_DB" ] && NATIVE_DB="tpch_orc_${SCALE_FACTOR}"
+  [ ! "$NATIVE_DB" ] && NATIVE_DB="tpch_${BENCH_FILE_FORMAT}_${SCALE_FACTOR}"	
   logger "INFO: Setting INPUT_DIR to read from HIVE table"
 else
   logger "WARN: NO INPUT_DIR SET"

@@ -10,6 +10,11 @@
 </property>
 
 <property>
+  <name>yarn.log-aggregation-enable</name>
+  <value>true</value>
+</property>
+
+<property>
     <name>yarn.scheduler.minimum-allocation-mb</name>
     <value>##CONTAINER_MIN_MB##</value>
     <description>Minimum limit of memory to allocate to each container request at the Resource Manager.</description>

@@ -8,6 +8,10 @@ source_file "$ALOJA_REPO_PATH/shell/common/common_spark.sh"
 set_spark_requires
 
 #BENCH_LIST="$(seq -f "tpch_query%g" -s " " 21 22)"
+#BENCH_LIST="tpch_query22"
+#BENCH_LIST="tpch_query2_2 tpch_query2_4 tpch_query2_8 tpch_query2_9 tpch_query2_11 tpch_query2_15 tpch_query2_16 tpch_query2_17 tpch_query2_18 tpch_query2_19 tpch_query2_20 tpch_query2_21 tpch_query2_22"
+
+#BENCH_LIST="tpch_query2_2 tpch_query2_8 tpch_query2_9 tpch_query2_11 tpch_query2_15 tpch_query2_16 tpch_query2_17 tpch_query2_19 tpch_query2_20"
 
 benchmark_suite_run() {
   logger "INFO: Running $BENCH_SUITE"

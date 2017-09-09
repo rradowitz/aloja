@@ -79,8 +79,10 @@ mainmenu() {
             alojastartup
 	    mainmenu
         elif [ "$mainmenuinput" = "x" ];then
+            vagrant destroy -f   
             exit
         elif [ "$mainmenuinput" = "X" ];then
+            vagrant destroy -f   
             exit
         else
             clear
@@ -250,7 +252,7 @@ getResults(){
   file=~/$(date +"%Y%m%d%H%M")-Local-Results.txt
   
   # set header
-  echo -e "JOB \tSCALE_FACTOR \tQUERY \tTIME \tSTATUS \tBENCH_SUITE \tNATIVE_FORMAT \tNATIVE_FILTER \tSCREEN PRINT \n" > $file
+  echo -e "JOB \tSCALE_FACTOR \tQUERY \tTIME \tSTATUS \tBENCH_SUITE \tNATIVE_FORMAT \tNATIVE_FILTER \tSCREEN PRINT \tBENCH_FILE_FORMAT \n" > $file
   
   # append the results to created file 
   for run in ${ALOJA_DIR}/blobs/jobs_*/2017*;
@@ -266,12 +268,14 @@ getResults(){
     declare -A  NATIVE_FILTER && 
     eval $(grep "NATIVE_FILTER" $run/config.sh) &&
     declare -A  NATIVE_SPRINT && 
-    eval $(grep "NATIVE_SPRINT" $run/config.sh) &&    
+    eval $(grep "NATIVE_SPRINT" $run/config.sh) &&
+    declare -A  BENCH_FILE_FORMAT && 
+    eval $(grep "BENCH_FILE_FORMAT" $run/config.sh) &&        
     for bench in ${!EXEC_TIME[@]}; 
     do 
       config=${run##*_ETH_}; 
       scale=${config##*_S}; 
-      echo -e "${run##*/}\t${scale%%_*}\t$bench\t${EXEC_TIME[$bench]}\t${EXEC_STATUS[$bench]}\t${BENCH_SUITE}\t${NATIVE_FORMAT}\t${NATIVE_FILTER}\t${NATIVE_SPRINT}"; 
+      echo -e "${run##*/}\t${scale%%_*}\t$bench\t${EXEC_TIME[$bench]}\t${EXEC_STATUS[$bench]}\t${BENCH_SUITE}\t${NATIVE_FORMAT}\t${NATIVE_FILTER}\t${NATIVE_SPRINT}\t${BENCH_FILE_FORMAT}"; 
     done && 
     unset EXEC_TIME EXEC_STATUS; 
   done | grep -v validate | sort >> $file

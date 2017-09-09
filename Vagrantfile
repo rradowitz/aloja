@@ -182,6 +182,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         v.cpus = vmCPUS  #change as needed
         # Force to use hosts DNS
         v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+        v.customize ["modifyvm", :id, "--nictype1", "virtio"]
       end
     end
   end
