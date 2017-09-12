@@ -35,8 +35,8 @@ fi
 [ ! "$(which gcc)" ] && die "Build tools not installed for TPC-H datagen to work"
 
 D2F_folder_name="D2F-Bench-master"
-#BENCH_REQUIRED_FILES["$D2F_folder_name"]="http://github.com/Aloja/D2F-Bench/archive/master.zip"
-BENCH_REQUIRED_FILES["$D2F_folder_name"]="http://github.com/rradowitz/D2F-Bench/archive/master.zip"
+BENCH_REQUIRED_FILES["$D2F_folder_name"]="http://github.com/Aloja/D2F-Bench/archive/master.zip"
+#BENCH_REQUIRED_FILES["$D2F_folder_name"]="http://github.com/rradowitz/D2F-Bench/archive/master.zip"
 D2F_local_dir="$(get_local_apps_path)/$D2F_folder_name"
 
 benchmark_suite_config() {

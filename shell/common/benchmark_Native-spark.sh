@@ -15,7 +15,8 @@ source_file "$ALOJA_REPO_PATH/shell/common/common_spark.sh"
 set_spark_requires
 
 # Setting bench list - queries 1 to 22 - override 
-#BENCH_LIST="$(seq 20 22)"
+BENCH_LIST="$(seq 22)"
+#BENCH_LIST="$(seq 17 22)"
 
 # Set Bench name
 BENCH_NAME="TPCH-on-Native_Spark"
@@ -62,6 +63,8 @@ benchmark_suite_run() {
   logger "INFO: Running $BENCH_SUITE"
   
   tpc-h_datagen
+
+  execute_hadoop_new "$bench_name" "fs -mkdir -p /user/enventLog"
 
   BENCH_CURRENT_NUM_RUN="1" #reset the global counter
 

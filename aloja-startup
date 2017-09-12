@@ -277,7 +277,7 @@ getResults(){
       scale=${config##*_S}; 
       echo -e "${run##*/}\t${scale%%_*}\t$bench\t${EXEC_TIME[$bench]}\t${EXEC_STATUS[$bench]}\t${BENCH_SUITE}\t${NATIVE_FORMAT}\t${NATIVE_FILTER}\t${NATIVE_SPRINT}\t${BENCH_FILE_FORMAT}"; 
     done && 
-    unset EXEC_TIME EXEC_STATUS; 
+    unset EXEC_TIME EXEC_STATUS BENCH_SUITE NATIVE_FORMAT NATIVE_FILTER NATIVE_SPRINT BENCH_FILE_FORMAT; 
   done | grep -v validate | sort >> $file
 }
 
