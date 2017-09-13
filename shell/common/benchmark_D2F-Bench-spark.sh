@@ -12,11 +12,14 @@ set_spark_requires
 #BENCH_LIST="tpch_query2_2 tpch_query2_4 tpch_query2_8 tpch_query2_9 tpch_query2_11 tpch_query2_15 tpch_query2_16 tpch_query2_17 tpch_query2_18 tpch_query2_19 tpch_query2_20 tpch_query2_21 tpch_query2_22"
 #BENCH_LIST="tpch_query11 tpch_query15 tpch_query17 tpch_query18 tpch_query21 tpch_query22"
 BENCH_LIST="tpch_query2_2 tpch_query2_4 tpch_query2_8 tpch_query2_9 tpch_query2_11 tpch_query2_15 tpch_query2_16 tpch_query2_17 tpch_query2_18 tpch_query2_19 tpch_query2_20"
+#BENCH_LIST="tpch_query2_21"
 
 benchmark_suite_run() {
   logger "INFO: Running $BENCH_SUITE"
 
   tpc-h_datagen
+
+  execute_hadoop_new "$bench_name" "fs -mkdir -p /user/enventLog"
 
   BENCH_CURRENT_NUM_RUN="1" #reset the global counter
    

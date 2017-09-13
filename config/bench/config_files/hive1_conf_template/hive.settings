@@ -39,13 +39,13 @@ set hive.optimize.reducededuplication.min.reducer=4;
 set hive.optimize.reducededuplication=true;
 set hive.orc.splits.include.file.footer=false;
 
--- set hive.exec.orc.default.compress=ZLIB;
-set hive.exec.orc.default.compress=SNAPPY;
+set hive.exec.orc.default.compress=ZLIB;
+-- set hive.exec.orc.default.compress=SNAPPY;
 set hive.exec.orc.default.stripe.size=268435456;
 set hive.exec.orc.default.block.size=268435456;
 
--- set parquet.compression=GZIP;
-set parquet.compression=SNAPPY;
+set parquet.compression=GZIP;
+-- set parquet.compression=SNAPPY;
 set parquet.block.size=268435456;
 set dfs.blocksize=268435456;
 
